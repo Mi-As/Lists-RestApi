@@ -3,21 +3,25 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 
 class User(db.Model):
-	__tabelname__ = 'users'
-	user_id = db.Column(db.Integer, primary_key=True)
+	id = db.Column(db.Integer, primary_key=True)
 	public_id = db.Column(db.String(50), nullable=False, unique=True)
 
 	name = db.Column(db.String(50), nullable=False)
 	email = db.Column(db.String(50), nullable=False, unique=True)
 	password = db.Column(db.String(255), nullable=False)
 
-	role = db.relationship('Role', secondary='user_roles')
+	# Relationships
+	role = db.relationship('Role', secondary='user_role')
 
-	def __init__(self,name,email,password):
+	def __init__(self, name, email, password, role='User'):
 		self.public_id = str(uuid.uuid4())
+
 		self.name = name
 		self.email = email
 		self.set_password(password)
+
+		# self.role = Role.query.filter_by(name=role).first()
+		# assert self.role is None
 
 	def set_password(self, secret):
 		self.password = generate_password_hash(secret)
@@ -26,12 +30,12 @@ class User(db.Model):
 		return check_password_hash(self.password, secret)
 	
 class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True) # 'Admin', 'User'
+	id = db.Column(db.Integer(), primary_key=True)
+	name = db.Column(db.String(50), unique=True)
 
-class UserRoles(db.Model): # association table
-    __tablename__ = 'user_roles'
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'))
-    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id', ondelete='CASCADE'))	
+# Define the user_role association table
+user_role = db.Table('user_role',
+	db.Column('user_id', db.Integer(), db.ForeignKey('user.id'), primary_key=True),
+	db.Column('role_id', db.Integer(), db.ForeignKey('role.id'), primary_key=True)
+)
+
