@@ -1,5 +1,5 @@
 *.pyc
 venv/
 .idea
-Lists/migrations/
-Lists/main.db
+Notes/migrations/
+Notes/main.db

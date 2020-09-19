@@ -19,8 +19,8 @@ with app.app_context():
 migrate = Migrate(app, db)
 
 # ROUTES
-from .apps import lists, users
-lists.init_app(app)
+from .apps import notes, users
+notes.init_app(app)
 users.init_app(app)
 
 from . import authentication as auth
