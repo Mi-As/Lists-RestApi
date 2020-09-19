@@ -19,11 +19,14 @@ from .apps import lists, users
 lists.init_app(app)
 users.init_app(app)
 
+from .authentication import * 
+authentication.init_app(app)
+
 # JWT
 jwt = JWTManager(app)
 
 @app.route("/")
 def hello():
-    return jsonify([{"0":"Hello, World!"}])
+    return jsonify([{"message":"Hello, World!"}])
 
 
