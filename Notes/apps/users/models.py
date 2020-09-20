@@ -13,7 +13,7 @@ class User(db.Model):
 	# Relationships
 	# One-to-Many
 	role_name = db.Column(db.String, db.ForeignKey('role.name'))
-	role = db.relationship('role')
+	role = db.relationship('Role')
 	# Many-to-One
 	notes = db.relationship('Note', passive_deletes='all')
 
@@ -27,17 +27,17 @@ class User(db.Model):
 	def set_role_name(self, role_name):
 		role = Role.query.filter_by(name=role_name).first()
 		assert role, "no such user_role!" 
-		self.role_name.append(role.name)
+		# self.role_name= role.name
+		self.role = role
 
 	def set_password(self, secret):
 		self.password = generate_password_hash(secret)
 
 	def check_password(self, secret):
 		return check_password_hash(self.password, secret)
-	
-role = db.Table('role', # ['Admin', 'User']
-	db.Column('id', db.Integer, primary_key=True),
-	db.Column('name', db.String, unique=True),
-	db.Column('has_access', db.Boolean, default=False)
-)
 
+class Role(db.Model):  # ['Admin', 'User']
+	id = db.Column(db.Integer, primary_key=True)
+	name = db.Column(db.String, unique=True, nullable=False)
+	has_access = db.Column(db.Boolean, nullable=False, default=False)
+	
