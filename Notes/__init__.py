@@ -29,8 +29,26 @@ auth.init_app(app)
 # JWT
 jwt = JWTManager(app)
 
+@jwt.user_loader_callback_loader
+def user_loader_callback(identity):
+	requested_user = users.models.User.query.filter_by(public_id=identity).first()
+	return requested_user
+
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+	requested_user = users.models.User.query.filter_by(public_id=identity).first()
+	return {'role':requested_user.role_name}
+
+# HELLO WORLD
 @app.route("/")
 def hello():
-    return jsonify([{"message":"Hello, World!"}])
+    return jsonify([{"msg":"Hello, World!"}])
+
+# PROTECTED HELLO WORLD
+from flask_jwt_extended import jwt_required
+@app.route("/protected")
+@jwt_required
+def protected_hello():
+    return jsonify([{"protected msg":"Hello, World!"}])
 
 
