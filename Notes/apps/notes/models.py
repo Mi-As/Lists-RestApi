@@ -1,7 +1,8 @@
 from ... import db
 from datetime import datetime
-from ..users.models import User
 import uuid
+# import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
+from ..users import models as users
 
 class Note(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -28,7 +29,7 @@ class Note(db.Model):
 		self.set_tags(tag_list)
 
 	def set_user_id(self, user_public_id):
-	 	user = User.query.filter_by(public_id=user_public_id).first()
+	 	user = users.User.query.filter_by(public_id=user_public_id).first()
 	 	assert user, "no such user_public_id!" # 500 internal server error
 	 	self.user_public_id = user_public_id
  

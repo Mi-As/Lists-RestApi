@@ -1,8 +1,12 @@
 from ... import db
 from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
+# import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
+from ..notes import models as notes
 
+print("before class")
 class User(db.Model):
+	print("in class")
 	id = db.Column(db.Integer, primary_key=True)
 	public_id = db.Column(db.String(50), nullable=False, unique=True)
 
@@ -13,7 +17,6 @@ class User(db.Model):
 	# Relationships
 	# One-to-Many
 	role_name = db.Column(db.String, db.ForeignKey('role.name'))
-	role = db.relationship('Role')
 	# Many-to-One
 	notes = db.relationship('Note', passive_deletes='all')
 
@@ -27,8 +30,7 @@ class User(db.Model):
 	def set_role_name(self, role_name):
 		role = Role.query.filter_by(name=role_name).first()
 		assert role, "no such user_role!" 
-		# self.role_name= role.name
-		self.role = role
+		self.role_name = role_name
 
 	def set_password(self, secret):
 		self.password = generate_password_hash(secret)
