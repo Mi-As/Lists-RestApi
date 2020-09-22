@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -12,6 +11,7 @@ class Config:
 
 class DevelopmentConfig(Config):
 	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'main.db')
+	print(SQLALCHEMY_DATABASE_URI)
 
 	SECRET_KEY = 'mySecretDevelopmentKey'
 	JWT_SECRET_KEY = 'myJwtDevelopmentKey'
@@ -26,7 +26,12 @@ class DevelopmentConfig(Config):
 
 #	DEBUG = False
 
-#class TestingConfig(Config):
-#	SECRET_KEY = 'my_testing_key'
-#	TESTING = True
+class TestingConfig(Config):
+	SQLALCHEMY_DATABASE_URI = '' # tempfile
+	# 'sqlite:///' + os.path.join(basedir, 'test.db')
+
+	SECRET_KEY = 'mySecretTestingKey'
+	JWT_SECRET_KEY = 'myJwtTestingKey'
+
+	TESTING = True
 

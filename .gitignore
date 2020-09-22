@@ -3,3 +3,5 @@ venv/
 .idea
 Notes/migrations/
 Notes/main.db
+.pytest_cache
+tests/tmp/
