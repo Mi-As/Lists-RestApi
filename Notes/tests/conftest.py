@@ -20,7 +20,7 @@ def client():
 
 	db_fd, db_temp_file_uri = tempfile.mkstemp(
 		suffix = '.db', 
-		dir='/home/miriam/Projects/Python/Flask/Notes/Notes/tests/tmp/')
+		dir='***/Notes/Notes/tests/tmp/')
 
 	app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_temp_file_uri
 
