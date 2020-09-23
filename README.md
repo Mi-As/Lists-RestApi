@@ -61,3 +61,8 @@ Add additional notes about how to deploy this on a live system
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
+## Extras
+
+Database Schema: https://dbdiagram.io/d/5f675f227da1ea736e2e8ffc
+RestApi Documentation: https://www.getpostman.com/collections/5f8a89818fa88a4d31f5
+
