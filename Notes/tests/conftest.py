@@ -1,44 +1,43 @@
 import os
 import pytest
 import tempfile
-from flask_sqlalchemy import SQLAlchemy
-
 ''' 
 configures the application for testing and initializes a new database
 https://flask.palletsprojects.com/en/1.1.x/testing/#the-testing-skeleton
 '''
 
-from .. import app
-
-# CONFIGURATION
-from ..config import TestingConfig
-app.config.from_object(TestingConfig)
-
-# FIXTURE
+# FIXTURES
 @pytest.fixture
-def client():
+def app():
+	from .. import app
+	from ..config import TestingConfig
 
-	db_fd, db_temp_file_uri = tempfile.mkstemp(
-		suffix = '.db', 
-		dir='***/Notes/Notes/tests/tmp/')
+	app.config.from_object(TestingConfig)
+	
+	return app
 
-	app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_temp_file_uri
-
+@pytest.fixture
+def client(app):
 	with app.test_client() as client:
+		yield client		
 
-		# DATABASE
-		db = SQLAlchemy()
-		with app.app_context():
-			db.init_app(app)
-			db.create_all()	
+@pytest.fixture
+def db(app):
+	from flask_sqlalchemy import SQLAlchemy
 
-		yield client
+	# NEW TEST DATABASE
+	db = SQLAlchemy()
+	with app.app_context():
+		db.init_app(app)
+		db.create_all()	
+		yield db
 
 		#CLEAN UP
 		db.session.remove()
 		db.drop_all()
 		
-	os.remove(db_temp_file_uri)
+	os.remove(
+		app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///',''))
 
 
 		

@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -11,7 +12,6 @@ class Config:
 
 class DevelopmentConfig(Config):
 	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'main.db')
-	print(SQLALCHEMY_DATABASE_URI)
 
 	SECRET_KEY = 'mySecretDevelopmentKey'
 	JWT_SECRET_KEY = 'myJwtDevelopmentKey'
@@ -19,19 +19,22 @@ class DevelopmentConfig(Config):
 	DEVELOPMENT = True
 	DEBUG = True
 
-# class ProductionConfig(Config):
-#	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-#	SECRET_KEY = os.environ.get('SECRET_KEY')
-#	JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') #Todo: b19105c8-9594-43f4-9143-4ac619e855c7
-
-#	DEBUG = False
-
 class TestingConfig(Config):
-	SQLALCHEMY_DATABASE_URI = '' # tempfile
-	# 'sqlite:///' + os.path.join(basedir, 'test.db')
+	db_fd, db_temp_file_uri = tempfile.mkstemp(
+		suffix = '.db', 
+		dir= os.path.join(basedir, 'tests/tmp/'))
+
+	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + db_temp_file_uri
 
 	SECRET_KEY = 'mySecretTestingKey'
 	JWT_SECRET_KEY = 'myJwtTestingKey'
 
 	TESTING = True
+
+# class ProductionConfig(Config):
+#	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+#	SECRET_KEY = os.environ.get('SECRET_KEY')
+#	JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+
+#	DEBUG = False
 
