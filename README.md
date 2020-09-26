@@ -2,7 +2,7 @@
 
 This is a flask web application. It is still in early development.
 
-[README.md](README.md) is still in a raw template form
+[README.md](README.md) is still in a raw template form.
 
 ## Getting Started
 
@@ -31,20 +31,8 @@ End with an example of getting some data out of the system or using it for a lit
 
 Explain how to run the automated tests for this system
 
-### Break down into end to end tests
-
-Explain what these tests test and why
-
 ```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
+pytest -v
 ```
 
 ## Deployment

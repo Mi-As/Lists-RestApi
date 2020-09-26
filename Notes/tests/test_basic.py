@@ -8,7 +8,11 @@ class TestFixtures:
 		assert client
 
 	def test_fixture_db(self, db):
-		assert db
+	 	assert db
+	 	assert db.engine.table_names(), "No tables created"
+
+	def test_fixture_db_session(self, db_session):
+		assert db_session
 
 
 class TestHelloWorld:

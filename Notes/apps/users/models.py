@@ -4,9 +4,9 @@ import uuid
 # import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
 from ..notes import models as notes
 
-print("before class")
+
 class User(db.Model):
-	print("in class")
+
 	id = db.Column(db.Integer, primary_key=True)
 	public_id = db.Column(db.String(50), nullable=False, unique=True)
 
