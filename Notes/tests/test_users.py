@@ -19,7 +19,11 @@ class TestModels:
 	# USER
 	def test_new_user(self, db_session):
 		# create user and add to database
-		user_values = {'name':'test user', 'email':'test@email.com', 'password':'testpassword', 'role_name':'user'}
+		user_values = {
+			'name':'test user', 
+			'email':'test@email.com', 
+			'password':'testpassword', 
+			'role_name':'user'}  # reverenced role has to already exit
 		db_session.add(models.User(**user_values))
 		# get user and test values
 		new_user = models.User.query.filter_by(id=1).first()
@@ -29,19 +33,3 @@ class TestModels:
 		assert new_user.email == user_values['email']
 		assert new_user.check_password(user_values['password'])
 		assert new_user.role_name == user_values['role_name']
-
-
-
-	def test_change_name(self, db):
-		pass
-
-	def test_change_email(self, db):
-		pass
-
-	def test_change_role(self, db):
-		pass
-
-	def test_change_password(self, db):
-		pass
-
-
