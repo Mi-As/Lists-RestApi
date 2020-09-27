@@ -52,5 +52,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Extras
 
 Database Schema: https://dbdiagram.io/d/5f675f227da1ea736e2e8ffc
-RestApi Documentation: Postman
+
+RestApi Documentation: https://documenter.getpostman.com/view/12797884/TVKHVFRm
 
