@@ -42,13 +42,13 @@ def add_claims_to_access_token(identity):
 # HELLO WORLD
 @app.route("/")
 def hello():
-    return jsonify([{"msg":"Hello, World!"}])
+    return jsonify({"msg":"Hello, World!"})
 
 # PROTECTED HELLO WORLD
 from flask_jwt_extended import jwt_required
 @app.route("/protected")
 @jwt_required
 def protected_hello():
-    return jsonify([{"protected msg":"Hello, World!"}])
+    return jsonify({"protected msg":"Hello, World!"})
 
 
