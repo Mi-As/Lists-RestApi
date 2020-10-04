@@ -49,3 +49,4 @@ class TestModels:
 		assert new_user.email == user_values['email']
 		assert new_user.check_password(user_values['password'])
 		assert new_user.role_name == user_values['role_name']
+
