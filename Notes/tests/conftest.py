@@ -4,13 +4,8 @@ import names
 import pytest
 import tempfile
 
-from flask_jwt_extended import (
-	create_access_token, 
-	create_refresh_token, 
-	verify_jwt_in_request
-)
-
 from ..apps.users.models import User, Role
+from ..authentication.service import create_access_token, create_refresh_token
 ''' 
 configures the application for testing and initializes a new database
 https://flask.palletsprojects.com/en/1.1.x/testing/	the-testing-skeleton
@@ -70,7 +65,7 @@ def test_user(db_session):
 				 'password': str(uuid.uuid4().hex)}
 	user =User(**user_data)
 	db_session.add(user)
-	db_session.flush()
+	db_session.commit()
 	return user, user_data
 
 @pytest.fixture(scope='function')

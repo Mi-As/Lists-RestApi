@@ -18,6 +18,7 @@ class TestFixtures:
 	def test_fixture_user(self, test_user):
 		user, user_data = test_user
 		assert user
+		assert user_data
 
 	def test_fixture_tokens(self, user_tokens):
 		tokens, token_user = user_tokens
@@ -37,7 +38,6 @@ class TestHelloWorld:
 		assert json_data['msg'] == "Hello, World!"
 
 	def test_hello_world_protected(self, client, user_tokens):
-		# test with valid token
 		tokens, _ = user_tokens
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + tokens['access_token']}
@@ -45,15 +45,17 @@ class TestHelloWorld:
 		json_data = response.get_json()
 
 		assert response.status_code == 200
-		assert json_data['protected msg'] == "Hello, World!"
+		assert json_data['msg'] == "protected: Hello, World!"
 
-		# test without token
-		headers = {'Content-Type': 'application/json'}
-		response = client.get('/protected', headers=headers)
+	def test_hello_world_protected(self, client, user_tokens):
+		tokens, _ = user_tokens
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + tokens['access_token_fresh']}
+		response = client.get('/protected-fresh', headers=headers)
 		json_data = response.get_json()
 
-		assert response.status_code == 401
-		assert json_data['msg'] == "Missing Authorization Header"
+		assert response.status_code == 200
+		assert json_data['msg'] == "protected fresh: Hello, World!"
 
 
 
