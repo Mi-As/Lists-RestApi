@@ -14,7 +14,7 @@ class Note(db.Model):
 
 	# Relationships
 	# One-to-Many
-	user_public_id = db.Column(db.Integer, db.ForeignKey('user.public_id', ondelete='CASCADE'))
+	user_public_id = db.Column(db.String(50), db.ForeignKey('user.public_id', ondelete='CASCADE'))
 	type_name =	db.Column(db.String, db.ForeignKey('note_type.name'))
 	# Many-to-Many
 	tags = db.relationship('NoteTag', secondary='tags_to_note', backref=db.backref('note'))

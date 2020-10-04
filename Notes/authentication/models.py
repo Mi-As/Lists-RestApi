@@ -7,12 +7,12 @@ from ..apps.users.service import get_user_by_public_id
 # https://github.com/vimalloc/flask-jwt-extended/blob/
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String(36), nullable=False)
+    jti = db.Column(db.String(36), nullable=False, unique=True)
     token_type = db.Column(db.String(10), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
     expires = db.Column(db.DateTime, nullable=False)
     # One-to-Many
-    user_public_id = db.Column(db.Integer, db.ForeignKey('user.public_id', ondelete='CASCADE'))
+    user_public_id = db.Column(db.String(50), db.ForeignKey('user.public_id', ondelete='CASCADE'))
 
     def __init__(self, encoded_token, user_identity):
     	decoded_token = decode_token(encoded_token)

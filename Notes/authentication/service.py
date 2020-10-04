@@ -25,7 +25,6 @@ def revoke_token(jti):
 	if not token:
 		return False
 	token.revoked = True
-	db.session.refresh(token)
 	db.session.commit()
 	return True
 
@@ -33,7 +32,7 @@ def revoke_user_tokens(user_public_id):
 	user = get_user_by_public_id(user_public_id)
 	if not user:
 		return False
-	for token in user.token:
+	for token in user.tokens:
 		if not revoke_token(token.jti):
 			return False
 	return True
