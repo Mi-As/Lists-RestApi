@@ -1,12 +1,14 @@
 from flask import json
-from ..apps.users.models import User, Role
 
-auth_user = {'name':'auth user', 'email':'auth.user@email.com', 
-			'password':'authuser'}
+class TestModels:
+	pass
 
-class TestAuthentication:
+class TestServices:
+	pass
 
-	def test_login(self, client, db_session, test_user):
+class TestEndpoints:
+
+	def test_login(self, client, test_user):
 		url = '/login'
 		_, user_data = test_user
 		# authentication
@@ -30,8 +32,21 @@ class TestAuthentication:
 		assert json_data['msg'] == "Bad email or password"
 		
 
-	def test_refresh(self):
+	def test_refresh(self, client, user_tokens):
 		url = '/refresh'
+		tokens, _ = user_tokens
 
-	def test_logout(self):
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + tokens['refresh_token']}
+		response = client.post(url, headers=headers)
+		json_data = response.get_json()
+
+		assert response.status_code == 200
+		assert json_data['access_token']
+
+	def test_logout(self, client, user_tokens):
 		url = '/logout'
+		tokens, _ = user_tokens
+
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + tokens['access_token']}

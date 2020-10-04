@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 # import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
 from ..notes import models as notes
+from ...authentication import models as authenticaton
 
 
 class User(db.Model):
@@ -19,6 +20,7 @@ class User(db.Model):
 	role_name = db.Column(db.String, db.ForeignKey('role.name'))
 	# Many-to-One
 	notes = db.relationship('Note', passive_deletes='all')
+	tokens = db.relationship('Token', passive_deletes='all')
 
 	def __init__(self, name, email, password, role_name='user'):
 		self.public_id = str(uuid.uuid4())

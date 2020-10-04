@@ -1,10 +1,7 @@
 from ..apps.notes import route, models
 from ..apps.users.models import User
 
-class TestEndpoints():
-	pass
-
-class TestModels():
+class TestModels:
 	
 	def test_new_note_tag(self, db_session):
 		# create tag and add to database
@@ -50,3 +47,9 @@ class TestModels():
 		# test relationship to user 
 		altered_note_user = User.query.filter_by(id=note_user.id).first()
 		assert altered_note_user.notes[0].public_id == new_note.public_id 
+
+class TestServices:
+	pass
+
+class TestEndpoints:
+	pass
