@@ -32,17 +32,17 @@ auth.init_app(app)
 
 
 # JWT
-from .apps.users.service import get_user_by_public_id
-from .authentication.service import get_token_by_jti
+from .apps.users.services import get_user_one
+from .authentication.services import get_token_by_jti
 jwt = JWTManager(app)
 
 @jwt.user_loader_callback_loader
 def user_loader_callback(identity):
-	return get_user_by_public_id(identity)
+	return get_user_one({'public_id':identity})
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
-	requested_user = get_user_by_public_id(identity)
+	requested_user = get_user_one({'public_id':identity})
 	return {'role':requested_user.role_name}
 
 @jwt.token_in_blacklist_loader

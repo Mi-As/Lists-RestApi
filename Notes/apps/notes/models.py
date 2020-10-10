@@ -1,8 +1,13 @@
-from ... import db
-from datetime import datetime
-import uuid
 # import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
 from ..users import models as users
+
+from ... import db
+import uuid
+from datetime import datetime
+
+from ..users.services import get_user_one
+from .services import get_note_type, get_note_tag
+
 
 class Note(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -29,19 +34,19 @@ class Note(db.Model):
 		self.set_tags(tag_list)
 
 	def set_user_id(self, user_public_id):
-	 	user = users.User.query.filter_by(public_id=user_public_id).first()
+	 	user = get_user_one({'public_id': user_public_id})
 	 	assert user, "no such user_public_id!" # 500 internal server error
 	 	self.user_public_id = user_public_id
  
 	def set_type_name(self, type_name):
-		note_type = NoteType.query.filter_by(name=type_name).first()
+		note_type = get_note_type(name=type_name)
 		assert note_type, "no such type_name!" # 500 internal server error
 		self.type_name = note_type.name
 	 	
 	def set_tags(self, tag_list):
 		self.tags = []
 		for t in tag_list:
-			tag = NoteTag.query.filter_by(name=t).first()
+			tag = get_note_tag(name=t)
 			# if tag does not exits make new one
 			if not tag:
 				tag = NoteTag(name=t)

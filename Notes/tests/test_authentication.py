@@ -1,8 +1,9 @@
 from flask import json
-from ..authentication import models
+from ..authentication import models, services
 
 from flask_jwt_extended import (create_access_token as jwt_create_access_token)
 from flask_jwt_extended import decode_token
+
 
 class TestModels:
 	
@@ -15,7 +16,7 @@ class TestModels:
 		db_session.add(models.Token(**token_values))
 		db_session.commit()
 		# test values
-		new_token = models.Token.query.filter_by(jti=decoded_test_token['jti']).one()
+		new_token = services.get_token_by_jti(jti=decoded_test_token['jti'])
 		assert new_token.jti
 		assert new_token.token_type == 'access'
 		assert new_token.revoked is not None
@@ -23,7 +24,21 @@ class TestModels:
 		assert new_token.user_public_id == token_user.public_id
 
 class TestServices:
-	pass
+	
+	def test_create_access_token(self):
+		pass
+
+	def test_create_refresh_token(self):
+		pass
+
+	def test_revoke_token(self):
+		pass
+
+	def test_revoke_user_tokens(self):
+		pass
+
+	def test_get_token_by_jti(self):
+		pass
 
 class TestEndpoints:
 
@@ -49,7 +64,6 @@ class TestEndpoints:
 
 		assert response.status_code == 401
 		assert json_data['msg'] == "Bad email or password"
-		
 
 	def test_refresh(self, client, user_tokens):
 		url = '/refresh'

@@ -5,7 +5,8 @@ import pytest
 import tempfile
 
 from ..apps.users.models import User, Role
-from ..authentication.service import create_access_token, create_refresh_token
+from ..authentication.services import create_access_token, create_refresh_token
+from ..apps.users.services import get_role
 ''' 
 configures the application for testing and initializes a new database
 https://flask.palletsprojects.com/en/1.1.x/testing/	the-testing-skeleton
@@ -56,7 +57,7 @@ def db_session(app, db):
 # FIXTURES: FUNCTION
 @pytest.fixture(scope='function')
 def test_user(db_session):
-	if not len(Role.query.filter_by(name='user').all()):
+	if not get_role('user'):
 		db_session.add(Role(name='user', has_access=0))
 
 	unique_name = names.get_last_name()

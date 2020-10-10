@@ -1,9 +1,12 @@
+# import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
+from ..notes import models as notes
+
 from ... import db
 from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
-# import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
-from ..notes import models as notes
+
 from ...authentication import models as authenticaton
+from .services import get_role
 
 
 class User(db.Model):
@@ -30,7 +33,7 @@ class User(db.Model):
 		self.set_role_name(role_name)
 
 	def set_role_name(self, role_name):
-		role = Role.query.filter_by(name=role_name).first()
+		role = get_role(name=role_name)
 		assert role, "no such user_role!" 
 		self.role_name = role_name
 

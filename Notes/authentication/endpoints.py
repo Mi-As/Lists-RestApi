@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
 	jwt_refresh_token_required, get_jwt_identity, jwt_required)
-from .service import create_access_token, create_refresh_token, revoke_user_tokens
-from ..apps.users.service import get_user_by_email
+from .services import create_access_token, create_refresh_token, revoke_user_tokens
+from ..apps.users.services import get_user_one
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -23,7 +23,7 @@ def login():
 	if not email or not password:
 		return jsonify({"msg": "Missing email or/and password parameter"}), 400
 	try:
-		requested_user = get_user_by_email(email) # get user object
+		requested_user = get_user_one({'email': email}) # get user object
 		if requested_user.check_password(password):
 			identity = requested_user.public_id
 			ret = {
