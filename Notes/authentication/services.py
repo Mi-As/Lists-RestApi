@@ -5,14 +5,14 @@ from ..apps.users.services import get_user_one
 from flask_jwt_extended import create_access_token as jwt_create_access_token
 from flask_jwt_extended import create_refresh_token as jwt_create_refresh_token
 
-def create_access_token(identity='', fresh=False):
+def create_access_token(identity, fresh=False):
 	access_token = jwt_create_access_token(identity=identity, fresh=fresh)
 	obj_token = Token(access_token, identity)
 	db.session.add(obj_token)
 	db.session.commit()
 	return access_token
 
-def create_refresh_token(identity=''):
+def create_refresh_token(identity):
 	refresh_token = jwt_create_refresh_token(identity=identity)
 	obj_token = Token(refresh_token, identity)
 	db.session.add(obj_token)
@@ -39,9 +39,4 @@ def revoke_user_tokens(user_public_id):
 
 
 def get_token_by_jti(jti):
-	try:
-		token = Token.query.filter_by(jti=jti).one()
-		return token
-	except NoResultFound:
-		return None
-
+	return Token.query.filter_by(jti=jti).first()

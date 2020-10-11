@@ -7,7 +7,7 @@ from ..apps.users.services import get_user_one
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, unique=True)
-    token_type = db.Column(db.String(10), nullable=False)
+    type = db.Column(db.String(10), nullable=False)
     revoked = db.Column(db.Boolean, nullable=False)
     expires = db.Column(db.DateTime, nullable=False)
     # One-to-Many
@@ -17,7 +17,7 @@ class Token(db.Model):
     	decoded_token = decode_token(encoded_token)
 
     	self.jti = decoded_token['jti']
-    	self.token_type = decoded_token['type']
+    	self.type = decoded_token['type']
     	self.revoked = False
     	self.expires = datetime.fromtimestamp( 
     			decoded_token['exp']) # utc to datetime
