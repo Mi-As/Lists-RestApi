@@ -22,18 +22,19 @@ def login():
 	password = request.json.get('password')
 	if not email or not password:
 		return jsonify({"msg": "Missing email or/and password parameter"}), 400
-	try:
-		requested_user = get_user_one({'email': email}) # get user object
-		if requested_user.check_password(password):
-			identity = requested_user.public_id
-			ret = {
-				'access_token': create_access_token(identity=identity, fresh=True),
-				'refresh_token': create_refresh_token(identity=identity)}
-			return jsonify(ret), 200
+	
+	requested_user = get_user_one({'email': email}) # get user object
+	if not requested_user:
+		return jsonify({"msg": "Bad email or password"}), 401
 
-	except Exception as e:
-		print(e)
-	return jsonify({"msg": "Bad email or password"}), 401
+	if requested_user.check_password(password):
+		identity = requested_user.public_id
+		ret = {
+			'access_token': create_access_token(identity=identity, fresh=True),
+			'refresh_token': create_refresh_token(identity=identity)}
+		return jsonify(ret), 200
+	else:
+		return jsonify({"msg": "Bad email or password"}), 401
 
 # This will generate a new access token from the refresh token, but
 # will mark that access token as non-fresh

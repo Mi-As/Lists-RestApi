@@ -78,7 +78,7 @@ class TestServices:
 		assert role1.name == 'get_test'
 
 		# no such value
-		assert get_role('i dont exist') == None
+		assert get_role('i dont exist') is None
 
 	def test_get_roles_by_access(self, db_session):
 		start_has_access = len(get_roles_by_access(1))

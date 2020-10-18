@@ -79,23 +79,49 @@ class TestEndpoints:
 		_, user_data = test_user
 		# authentication
 		# valid data
-		data = {'email': user_data['email'], 'password':user_data['password']} 
-		headers = {'Content-Type': 'application/json'}
-		response = client.post(url, headers=headers, data=json.dumps(data))
-		json_data = response.get_json()
+		data1 = {'email': user_data['email'], 'password': user_data['password']} 
+		headers1 = {'Content-Type': 'application/json'}
+		response1 = client.post(url, headers=headers1, data=json.dumps(data1))
+		json_data1 = response1.get_json()
 
-		assert response.status_code == 200
-		assert json_data['access_token']
-		assert json_data['refresh_token']
+		assert response1.status_code == 200
+		assert json_data1['access_token']
+		assert json_data1['refresh_token']
 
-		# invalid data
-		data = {'email': user_data['email'], 'password': 'asdf'} 
-		headers = {'Content-Type': 'application/json'}
-		response = client.post(url, headers=headers, data=json.dumps(data))
-		json_data = response.get_json()
+		# invalid user password
+		data2 = {'email': user_data['email'], 'password': 'invalid'} 
+		headers2 = {'Content-Type': 'application/json'}
+		response2 = client.post(url, headers=headers2, data=json.dumps(data2))
+		json_data2 = response2.get_json()
 
-		assert response.status_code == 401
-		assert json_data['msg'] == "Bad email or password"
+		assert response2.status_code == 401
+		assert json_data2['msg'] == "Bad email or password"
+
+		# invalid user email
+		data3 = {'email': 'invalid', 'password': user_data['password']} 
+		headers3 = {'Content-Type': 'application/json'}
+		response3 = client.post(url, headers=headers3, data=json.dumps(data3))
+		json_data3 = response3.get_json()
+
+		assert response3.status_code == 401
+		assert json_data3['msg'] == "Bad email or password"
+
+		# invalid json data
+		data4 = {'email': 'invalid', 'password':user_data['password']} 
+		response4 = client.post(url, data=data3)
+		json_data4 = response4.get_json()
+
+		assert response4.status_code == 400
+		assert json_data4['msg'] == "Missing JSON in request"
+
+		# invalid post data
+		data5 = {'email': user_data['email'], 'invalid':user_data['password']} 
+		headers5 = {'Content-Type': 'application/json'}
+		response5 = client.post(url, headers=headers5, data=json.dumps(data5))
+		json_data5= response5.get_json()
+
+		assert response5.status_code == 400
+		assert json_data5['msg'] == "Missing email or/and password parameter"
 
 	def test_refresh(self, client, user_tokens):
 		url = '/refresh'
