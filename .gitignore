@@ -1,7 +1,11 @@
 *.pyc
 venv/
 .idea
+.pytest_cache
+.coverage
+coverage.xml
+htmlcov/
+Notes/htmlcov/
 Notes/migrations/
 Notes/main.db
-.pytest_cache
 tests/tmp/

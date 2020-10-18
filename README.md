@@ -1,5 +1,9 @@
 # Note Flask RESTApi
 
+[![Build Status](https://travis-ci.org/Mi-As/Note-RestApi.svg?branch=master)](https://travis-ci.org/github/Mi-As/Note-RestApi)
+
+[![Coverage Status](https://coveralls.io/repos/github/Mi-As/Note-RestApi/badge.svg?branch=master)](https://coveralls.io/github/Mi-As/Note-RestApi?branch=master)
+
 This is a flask web application. It is still in early development.
 
 [README.md](README.md) is still in a raw template form.
