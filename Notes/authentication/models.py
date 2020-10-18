@@ -1,7 +1,8 @@
-from .. import db
 from datetime import datetime
 from flask_jwt_extended import decode_token
-from ..apps.users.services import get_user_one
+
+from .. import db
+from ..apps.users import services as user_services
 
 # https://github.com/vimalloc/flask-jwt-extended/blob/
 class Token(db.Model):
@@ -24,6 +25,6 @@ class Token(db.Model):
     	self.set_user_id(user_identity)
 
     def set_user_id(self, public_id):
-    	user = get_user_one({'public_id':public_id})
+    	user = user_services.get_user_one({'public_id':public_id})
     	assert user, "user has no such public id!" # 500 internal server error
     	self.user_public_id = public_id

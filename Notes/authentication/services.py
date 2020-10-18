@@ -1,6 +1,6 @@
 from .. import db
 from .models import Token
-from ..apps.users.services import get_user_one
+from ..apps.users import services as user_services
 
 from flask_jwt_extended import create_access_token as jwt_create_access_token
 from flask_jwt_extended import create_refresh_token as jwt_create_refresh_token
@@ -29,7 +29,7 @@ def revoke_token(jti):
 	return True
 
 def revoke_user_tokens(user_public_id):
-	user = get_user_one({'public_id':user_public_id})
+	user = user_services.get_user_one({'public_id':user_public_id})
 	if not user:
 		return False
 	for token in user.tokens:

@@ -50,6 +50,7 @@ def check_if_token_in_blacklist(decrypted_token):
 	token = get_token_by_jti(decrypted_token['jti'])
 	return None if not token else token.revoked
 
+
 # HELLO WORLD
 @app.route("/")
 def hello():

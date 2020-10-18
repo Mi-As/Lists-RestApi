@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
 	jwt_refresh_token_required, get_jwt_identity, jwt_required)
-from .services import create_access_token, create_refresh_token, revoke_user_tokens
-from ..apps.users.services import get_user_one
+
+from . import services
+from ..apps.users import services as user_services
+
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -23,15 +25,15 @@ def login():
 	if not email or not password:
 		return jsonify({"msg": "Missing email or/and password parameter"}), 400
 	
-	requested_user = get_user_one({'email': email}) # get user object
+	requested_user = user_services.get_user_one({'email': email}) # get user object
 	if not requested_user:
 		return jsonify({"msg": "Bad email or password"}), 401
 
 	if requested_user.check_password(password):
 		identity = requested_user.public_id
 		ret = {
-			'access_token': create_access_token(identity=identity, fresh=True),
-			'refresh_token': create_refresh_token(identity=identity)}
+			'access_token': services.create_access_token(identity=identity, fresh=True),
+			'refresh_token': services.create_refresh_token(identity=identity)}
 		return jsonify(ret), 200
 	else:
 		return jsonify({"msg": "Bad email or password"}), 401
@@ -43,7 +45,7 @@ def login():
 def refresh():
 	current_user_public_id = get_jwt_identity()
 	ret = {
-		'access_token': create_access_token(identity=current_user_public_id, fresh=False)}
+		'access_token': services.create_access_token(identity=current_user_public_id, fresh=False)}
 	return jsonify(ret), 200
 
 # Endpoint for revoking the current users access and refesh token
@@ -51,7 +53,7 @@ def refresh():
 @jwt_required
 def logout():
 	user_public_id = get_jwt_identity()
-	if revoke_user_tokens(user_public_id):
+	if services.revoke_user_tokens(user_public_id):
 		return jsonify({"msg": "Successfully logged out"}), 200
 	else:
 		return jsonify({"msg": "Cannot revoke token"}), 404
