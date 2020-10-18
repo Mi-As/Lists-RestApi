@@ -47,7 +47,7 @@ class TestHelloWorld:
 		assert response.status_code == 200
 		assert json_data['msg'] == "protected: Hello, World!"
 
-	def test_hello_world_protected(self, client, user_tokens):
+	def test_hello_world_protected_fresh(self, client, user_tokens):
 		tokens, _ = user_tokens
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + tokens['access_token_fresh']}
