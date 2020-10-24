@@ -1,4 +1,5 @@
-from .endpoints import user_bp
+from .endpoints import UserAPI
+
 
 def init_app(app):
-	app.register_blueprint(user_bp, url_prefix='/user')
+	app.add_url_rule('/user', view_func=UserAPI.as_view('user'))
