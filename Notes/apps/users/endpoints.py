@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, fresh_jwt_required, current_user
 
-from .services import (user_to_json, get_user_all, 
+from .services import (user_to_dict, get_user_all, 
 	create_user, update_user, delete_user)
 
 
@@ -37,14 +37,17 @@ class UserAPI(MethodView):
 			email=json_data['email'],
 			password=json_data['password'])
 
-		return jsonify({"msg":'New user created! Hello {} :)'.format(new_user.name)}), 201
+		return jsonify(
+			{"msg":'New user created! Hello {} :)'.format(new_user.name),
+			 "user": user_to_dict(new_user)}
+		), 201
 
 	@jwt_required
 	def get(self):
 		""" 
 		:return: userdata from currently logged in user
 		"""
-		return user_to_json(current_user), 200
+		return jsonify(user_to_dict(current_user)), 200
 
 	@fresh_jwt_required
 	def put(self):

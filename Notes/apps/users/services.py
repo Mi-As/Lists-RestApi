@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, json
 
 from ... import db
 from ..services import except_invalid_request_error as except_error
@@ -32,18 +32,13 @@ def delete_user(user_obj):
 	db.session.commit()
 
 
-def user_to_json(user_obj):
-	"""
-	returns a Respone object (already has the appropriate
-	content-type header 'applictaion/json') 
-	"""
-	data = {
+def user_to_dict(user_obj):
+	return {
 		'public_id': user_obj.public_id,
 		'name': user_obj.name,
 		'email': user_obj.email,
 		'role_name': user_obj.role_name
 	}
-	return jsonify(data)
 
 
 # ROLE

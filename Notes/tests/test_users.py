@@ -4,7 +4,7 @@ from ..apps.users import endpoints, models
 from ..apps.users.services import (
 	get_user_one, get_user_all, create_user, update_user, delete_user,
 	get_role, get_roles_by_access, get_all_roles,
-	user_to_json)
+	user_to_dict)
 
 url = '/user'
 
@@ -100,15 +100,15 @@ class TestServices:
 
 		assert get_user_one({'email':user_data['email']}) is None
 
-	def test_user_to_json(self, test_user):
+	def test_user_to_dict(self, test_user):
 		user, _ = test_user
 
-		json_data = user_to_json(user).get_json()
+		dict_data = user_to_dict(user)
 
-		assert json_data['public_id'] == user.public_id
-		assert json_data['name'] == user.name
-		assert json_data['email'] == user.email
-		assert json_data['role_name'] == user.role_name
+		assert dict_data['public_id'] == user.public_id
+		assert dict_data['name'] == user.name
+		assert dict_data['email'] == user.email
+		assert dict_data['role_name'] == user.role_name
 
 
 	def test_get_role(self, db_session):
@@ -152,7 +152,8 @@ class TestEndpoints:
 		json_data1 = response1.get_json()
 		assert response1.status_code == 201
 		assert json_data1['msg'].startswith('New user created!')
-		assert get_user_one({'email':data1['email']})
+		assert json_data1['user']['email'] == data1['email']
+		assert get_user_one({'email': data1['email']})
 
 		# invalid keys
 		data2 = {'name':'asdf2','password':'asdf2'}
