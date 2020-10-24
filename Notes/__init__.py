@@ -14,6 +14,12 @@ app.config.from_object(DevelopmentConfig)
 # DATABASE
 db = SQLAlchemy()
 db.init_app(app)
+
+# app imports need to be before db.create_all()
+# otherwise sqlalchemy won't recoginize models
+from .apps import notes, users
+from . import authentication as auth
+
 with app.app_context():
     db.create_all()
 
@@ -23,11 +29,8 @@ migrate = Migrate(app, db)
 
 
 # ROUTES
-from .apps import notes, users
 notes.init_app(app)
 users.init_app(app)
-
-from . import authentication as auth
 auth.init_app(app)
 
 
