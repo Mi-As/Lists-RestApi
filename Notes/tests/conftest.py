@@ -1,7 +1,7 @@
 import os
-import uuid
 import names
 import pytest
+import random
 import tempfile
 
 from ..apps.users.models import User, Role
@@ -60,10 +60,11 @@ def test_user(db_session):
 	if not get_role('user'):
 		db_session.add(Role(name='user', has_access=0))
 
-	unique_name = names.get_last_name()
+	unique_name = names.get_last_name() + str(random.randint(10,99))
 	user_data = {'name': unique_name, 
 				 'email': (unique_name + '@email.com'),
-				 'password': str(uuid.uuid4().hex)}
+				 'password': unique_name}
+				 
 	user =User(**user_data)
 	db_session.add(user)
 	db_session.commit()
