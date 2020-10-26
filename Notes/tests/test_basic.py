@@ -20,12 +20,11 @@ class TestFixtures:
 		assert user
 		assert user_data
 
-	def test_fixture_tokens(self, user_tokens):
-		tokens, token_user = user_tokens
-		assert token_user
-		assert tokens['access_token_fresh']
-		assert tokens['access_token']
-		assert tokens['refresh_token']
+	def test_fixture_note(self, test_user_note):
+		user, user_data, note = test_user_note
+		assert user
+		assert user_data
+		assert note
 
 
 class TestHelloWorld:
@@ -37,20 +36,20 @@ class TestHelloWorld:
 		assert response.status_code == 200
 		assert json_data['msg'] == "Hello, World!"
 
-	def test_hello_world_protected(self, client, user_tokens):
-		tokens, _ = user_tokens
+	def test_hello_world_protected(self, client, test_user):
+		_, user_data = test_user
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token']}
+				   'Authorization': 'Bearer ' + user_data['access_token']}
 		response = client.get('/protected', headers=headers)
 		json_data = response.get_json()
 
 		assert response.status_code == 200
 		assert json_data['msg'] == "protected: Hello, World!"
 
-	def test_hello_world_protected_fresh(self, client, user_tokens):
-		tokens, _ = user_tokens
+	def test_hello_world_protected_fresh(self, client, test_user):
+		_, user_data = test_user
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token_fresh']}
+				   'Authorization': 'Bearer ' + user_data['access_token_fresh']}
 		response = client.get('/protected-fresh', headers=headers)
 		json_data = response.get_json()
 

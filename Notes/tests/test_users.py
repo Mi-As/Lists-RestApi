@@ -176,22 +176,22 @@ class TestEndpoints:
 		assert response4.status_code == 409
 		assert json_data4['msg'] == 'Email already in use!'
 
-	def test_get_request(self, client, user_tokens):
-		tokens, user = user_tokens
+	def test_get_request(self, client, test_user):
+		user, user_data = test_user
 
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token']}
+				   'Authorization': 'Bearer ' + user_data['access_token']}
 		response = client.get(url, headers=headers)
 		json_data = response.get_json()
 
 		assert response.status_code == 200
 		assert json_data['public_id'] == user.public_id
 
-	def test_put_request(self, client, user_tokens):
-		tokens, user = user_tokens
+	def test_put_request(self, client, test_user):
+		user, user_data = test_user
 
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token_fresh']}
+				   'Authorization': 'Bearer ' + user_data['access_token_fresh']}
 		data = {'name':'new name 123', 'email':'new email 123', 'password':'new password 123'}
 		response = client.put(url, headers=headers, data=json.dumps(data))
 		json_data = response.get_json()
@@ -200,11 +200,11 @@ class TestEndpoints:
 		assert json_data['msg'].startswith('User data')
 		assert get_user_one({'email':data['email']})
 
-	def test_delete_request(self, client, user_tokens):
-		tokens, user = user_tokens
+	def test_delete_request(self, client, test_user):
+		user, user_data = test_user
 
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token_fresh']}
+				   'Authorization': 'Bearer ' + user_data['access_token_fresh']}
 		response = client.delete(url, headers=headers)
 		json_data = response.get_json()
 

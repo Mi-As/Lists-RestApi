@@ -28,9 +28,9 @@ class TestModels:
 
 class TestServices:
 
-	def test_get_token_by_jti(self, user_tokens):
-		tokens, token_user = user_tokens
-		token_obj = get_token_by_jti(decode_token(tokens['access_token'])['jti'])
+	def test_get_token_by_jti(self, test_user):
+		token_user, user_data = test_user
+		token_obj = get_token_by_jti(decode_token(user_data['access_token'])['jti'])
 
 		assert token_obj.user_public_id == token_user.public_id
 		assert not get_token_by_jti('i dont exist')
@@ -53,17 +53,17 @@ class TestServices:
 		assert token_obj.user_public_id == token_user.public_id
 		assert token_obj.type == 'refresh'
 
-	def test_revoke_token(self, user_tokens):
-		tokens, _ = user_tokens
+	def test_revoke_token(self, test_user):
+		_, user_data = test_user
 
-		jit = decode_token(tokens['access_token'])['jti']
+		jit = decode_token(user_data['access_token'])['jti']
 		revoke_token(jit)
 
 		assert get_token_by_jti(jit).revoked == True
 		assert not revoke_token('i dont exist')
 
-	def test_revoke_user_tokens(self, user_tokens):
-		_, token_user = user_tokens
+	def test_revoke_user_tokens(self, test_user):
+		token_user, _ = test_user
 
 		assert not revoke_user_tokens('i dont exist')
 		
@@ -123,24 +123,24 @@ class TestEndpoints:
 		assert response5.status_code == 400
 		assert json_data5['msg'] == "Missing email or/and password parameter"
 
-	def test_refresh(self, client, user_tokens):
+	def test_refresh(self, client, test_user):
 		url = '/refresh'
-		tokens, _ = user_tokens
+		_, user_data = test_user
 
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['refresh_token']}
+				   'Authorization': 'Bearer ' + user_data['refresh_token']}
 		response = client.post(url, headers=headers)
 		json_data = response.get_json()
 
 		assert response.status_code == 200
 		assert json_data['access_token']
 
-	def test_logout(self, client, user_tokens):
+	def test_logout(self, client, test_user):
 		url = '/logout'
-		tokens, user = user_tokens
+		user, user_data = test_user
 
 		headers = {'Content-Type': 'application/json',
-				   'Authorization': 'Bearer ' + tokens['access_token']}
+				   'Authorization': 'Bearer ' + user_data['access_token']}
 		response = client.delete(url, headers=headers)
 		json_data = response.get_json()
 
