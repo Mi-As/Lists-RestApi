@@ -1,4 +1,4 @@
-from .endpoints import notes_bp
+from .endpoints import NotesAPI
 
 def init_app(app):
-	app.register_blueprint(notes_bp, url_prefix='/notes')
+	app.add_url_rule('/notes', view_func=NotesAPI.as_view('notes'))
