@@ -2,9 +2,7 @@ from flask import json
 from flask_jwt_extended import (create_access_token as jwt_create_access_token)
 from flask_jwt_extended import decode_token
 
-from ..authentication.models import Token
-from ..authentication.services import (create_access_token, create_refresh_token, 
-	get_token_by_jti, revoke_token, revoke_user_tokens)
+from ..authentication import models, services
 
 
 class TestModels:
@@ -15,10 +13,10 @@ class TestModels:
 		decoded_test_token = decode_token(test_token)
 		# create token and add to database
 		token_values = {'encoded_token': test_token, 'user_identity': token_user.public_id}
-		db_session.add(Token(**token_values))
+		db_session.add(models.Token(**token_values))
 		db_session.commit()
 		# test values
-		new_token = get_token_by_jti(jti=decoded_test_token['jti'])
+		new_token = services.get_token_by_jti(jti=decoded_test_token['jti'])
 		assert new_token.jti
 		assert new_token.type == 'access'
 		assert new_token.revoked is not None
@@ -30,15 +28,16 @@ class TestServices:
 
 	def test_get_token_by_jti(self, test_user):
 		token_user, user_data = test_user
-		token_obj = get_token_by_jti(decode_token(user_data['access_token'])['jti'])
+		token_obj = services.get_token_by_jti(decode_token(user_data['access_token'])['jti'])
 
 		assert token_obj.user_public_id == token_user.public_id
-		assert not get_token_by_jti('i dont exist')
+		assert not services.get_token_by_jti('i dont exist')
 
 	def test_create_access_token(self, test_user):
 		token_user, _ = test_user
-		test_token = create_access_token(identity=token_user.public_id)
-		token_obj = get_token_by_jti(decode_token(test_token)['jti'])
+		test_token = services.create_access_token(identity=token_user.public_id)
+		token_obj = services.get_token_by_jti(
+			decode_token(test_token)['jti'])
 
 		assert test_token
 		assert token_obj.user_public_id == token_user.public_id
@@ -46,8 +45,9 @@ class TestServices:
 
 	def test_create_refresh_token(self, test_user):
 		token_user, _ = test_user
-		test_token = create_refresh_token(identity=token_user.public_id)
-		token_obj = get_token_by_jti(decode_token(test_token)['jti'])
+		test_token = services.create_refresh_token(identity=token_user.public_id)
+		token_obj = services.get_token_by_jti(
+			decode_token(test_token)['jti'])
 
 		assert test_token
 		assert token_obj.user_public_id == token_user.public_id
@@ -57,17 +57,17 @@ class TestServices:
 		_, user_data = test_user
 
 		jit = decode_token(user_data['access_token'])['jti']
-		revoke_token(jit)
+		services.revoke_token(jit)
 
-		assert get_token_by_jti(jit).revoked == True
-		assert not revoke_token('i dont exist')
+		assert services.get_token_by_jti(jit).revoked == True
+		assert not services.revoke_token('i dont exist')
 
 	def test_revoke_user_tokens(self, test_user):
 		token_user, _ = test_user
 
-		assert not revoke_user_tokens('i dont exist')
+		assert not services.revoke_user_tokens('i dont exist')
 		
-		revoke_user_tokens(token_user.public_id)
+		services.revoke_user_tokens(token_user.public_id)
 		for t in token_user.tokens:
 			assert t.revoked
 

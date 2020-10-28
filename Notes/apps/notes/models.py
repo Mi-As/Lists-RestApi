@@ -32,7 +32,7 @@ class Note(db.Model):
 		self.set_tags(tag_list)
 
 	def set_user_id(self, user_public_id):
-	 	user = user_services.get_user_one({'public_id': user_public_id})
+	 	user = user_services.get_user({'public_id': user_public_id})
 	 	assert user, "no such user_public_id!" # 500 internal server error
 	 	self.user_public_id = user_public_id
  

@@ -29,7 +29,7 @@ def revoke_token(jti):
 	return True
 
 def revoke_user_tokens(user_public_id):
-	user = user_services.get_user_one({'public_id':user_public_id})
+	user = user_services.get_user({'public_id':user_public_id})
 	if not user:
 		return False
 	for token in user.tokens:

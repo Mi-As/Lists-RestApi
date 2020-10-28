@@ -5,11 +5,11 @@ from . import models
 
 # USER 
 @except_error
-def get_user_one(filter_data):
+def get_user(filter_data):
 	return models.User.query.filter_by(**filter_data).first()
 
 @except_error
-def get_user_all(filter_data=None):
+def get_users(filter_data=None):
 	if filter_data:
 		return models.User.query.filter_by(**filter_data).all()
 	return models.User.query.all()
@@ -22,7 +22,6 @@ def create_user(name, email, password, role_name='user'):
 	return new_user
 
 def update_user(user_obj):
-	db.session.add(user_obj)
 	db.session.commit()
 
 def delete_user(user_obj):
@@ -40,11 +39,12 @@ def user_to_dict(user_obj):
 
 
 # ROLE
-def get_role(name):
-	return models.Role.query.filter_by(name=name).first()
+@except_error
+def get_role(filter_data):
+	return models.Role.query.filter_by(**filter_data).first()
 
-def get_roles_by_access(has_access):
-	return models.Role.query.filter_by(has_access=has_access).all()
-
-def get_all_roles():
+@except_error
+def get_roles(filter_data=None):
+	if filter_data:
+		return models.Role.query.filter_by(**filter_data).all()
 	return models.Role.query.all()	

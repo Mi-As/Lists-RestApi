@@ -13,11 +13,11 @@ def update_obj(obj):
 
 # NOTE
 @except_error
-def get_note_one(filter_data):
+def get_note(filter_data):
 	return models.Note.query.filter_by(**filter_data).first()
 
 @except_error
-def get_note_all(filter_data=None):
+def get_notes(filter_data=None):
 
 	my_query = models.Note.query
 	if filter_data:
@@ -67,7 +67,7 @@ def get_note_type(filter_data):
 	return models.NoteType.query.filter_by(**filter_data).first()
 
 @except_error
-def get_all_note_types(filter_data=None):
+def get_note_types(filter_data=None):
 	if filter_data:
 		return models.NoteType.query.filter_by(**filter_data).all()
 	return models.NoteType.query.all()
@@ -91,7 +91,7 @@ def get_note_tag(filter_data):
 	return models.NoteTag.query.filter_by(**filter_data).first()
 
 @except_error
-def get_all_note_tags(filter_data=None):
+def get_note_tags(filter_data=None):
 	if filter_data:
 		return models.NoteTag.query.filter_by(**filter_data).all()
 	return models.NoteTag.query.all()

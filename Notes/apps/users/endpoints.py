@@ -2,11 +2,10 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, fresh_jwt_required, current_user
 
-from .services import (user_to_dict, get_user_all, 
-	create_user, update_user, delete_user)
+from . import services
 
 
-class UserAPI(MethodView):
+class UserEndpoints(MethodView):
 	""" Endpoint: /user """
 
 	def post(self):
@@ -26,20 +25,20 @@ class UserAPI(MethodView):
 			return jsonify({"msg":'Please check your data, no empty strings allowed!'}), 400
 
 		# check if email is unique
-		for u in get_user_all():
+		for u in services.get_users():
 			if u.email == json_data['email']:
 				print(u.email, u.name)
 				return jsonify({"msg":'Email already in use!'}), 409
 
 		# create user
-		new_user = create_user(
+		new_user = services.create_user(
 			name=json_data['name'],
 			email=json_data['email'],
 			password=json_data['password'])
 
 		return jsonify(
 			{"msg":'New user created! Hello {} :)'.format(new_user.name),
-			 "user": user_to_dict(new_user)}
+			 "user": services.user_to_dict(new_user)}
 		), 201
 
 	@jwt_required
@@ -47,7 +46,7 @@ class UserAPI(MethodView):
 		""" 
 		:return: userdata from currently logged in user
 		"""
-		return jsonify(user_to_dict(current_user)), 200
+		return jsonify(services.user_to_dict(current_user)), 200
 
 	@fresh_jwt_required
 	def put(self):
@@ -56,7 +55,6 @@ class UserAPI(MethodView):
 		:params name, email, password:
 		:return: success message
 		"""
-
 		json_data = request.get_json()
 
 		for key, data in json_data.items():
@@ -67,7 +65,7 @@ class UserAPI(MethodView):
 			elif key == 'password':
 				current_user.set_password(data)
 
-		update_user(current_user)
+		services.update_user(current_user)
 
 		return jsonify({"msg":
 			'User data {} successfully updated!'.format(list(json_data.keys()))
@@ -80,6 +78,6 @@ class UserAPI(MethodView):
 		deletes current user
 		:return: success message
 		"""
-		delete_user(current_user)
+		services.delete_user(current_user)
 		return jsonify({"msg":"User '{}' has been successfully deleted!".format(current_user.name)}), 200
 

@@ -35,13 +35,13 @@ auth.init_app(app)
 
 
 # JWT
-from .apps.users.services import get_user_one
+from .apps.users.services import get_user
 from .authentication.services import get_token_by_jti
 jwt = JWTManager(app)
 
 @jwt.user_loader_callback_loader
 def user_loader_callback(identity):
-	return get_user_one({'public_id':identity})
+	return get_user({'public_id':identity})
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):

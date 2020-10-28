@@ -1,10 +1,5 @@
 from flask import json
-from ..apps.users import endpoints, models
-
-from ..apps.users.services import (
-	get_user_one, get_user_all, create_user, update_user, delete_user,
-	get_role, get_roles_by_access, get_all_roles,
-	user_to_dict)
+from ..apps.users import endpoints, models, services
 
 url = '/user'
 
@@ -13,14 +8,14 @@ class TestModels:
 	# ROLE
 	def test_new_role(self, db_session):
 		# create role and add to database
-		role_values = {'name':'test','has_access':0}
+		role_values = {'name':'test','has_full_access':0}
 		db_session.add(models.Role(**role_values))
 		db_session.commit()
 		# get role and test values
-		new_role = get_role(name=role_values['name'])
+		new_role = services.get_role({'name':role_values['name']})
 		assert new_role
 		assert new_role.name == role_values['name']
-		assert new_role.has_access == role_values['has_access']
+		assert new_role.has_full_access == role_values['has_full_access']
 	
 	# USER
 	def test_new_user(self, db_session):
@@ -33,7 +28,7 @@ class TestModels:
 		db_session.add(models.User(**user_values))
 		db_session.commit()
 		# get user and test values
-		new_user = get_user_one({'email':user_values['email']})
+		new_user = services.get_user({'email':user_values['email']})
 		assert new_user
 		assert new_user.public_id
 		assert new_user.name == user_values['name']
@@ -44,66 +39,66 @@ class TestModels:
 
 class TestServices:
 	
-	def test_get_user_one(self, test_user):
+	def test_get_user(self, test_user):
 		user, _ = test_user
 
 		filter_data1 = {'public_id': user.public_id}
-		filter1 = get_user_one(filter_data1)
+		filter1 = services.get_user(filter_data1)
 		assert filter1.public_id == user.public_id
 
 		# no such value
 		filter_data2 = {'public_id': 'i dont exist'}
-		assert get_user_one(filter_data2) is None
+		assert services.get_user(filter_data2) is None
 
 		# key error
 		filter_data3 = {'i dont exist': user.public_id}
-		assert get_user_one(filter_data3) is None
+		assert services.get_user(filter_data3) is None
 
-	def test_get_user_all(self, test_user):
+	def test_get_users(self, test_user):
 		user, _ = test_user
-		assert get_user_all()
+		assert services.get_users()
 
 		filter_data1 = {'role_name': user.role_name}
-		assert get_user_all(filter_data1)
+		assert services.get_users(filter_data1)
 
 		# no such value
 		filter_data2 = {'role_name':'i dont exist'}
-		assert not get_user_all(filter_data2)
+		assert not services.get_users(filter_data2)
 
 		# key error
 		filter_data3 = {'i dont exist': user.role_name}
-		assert not get_user_all(filter_data3)
+		assert not services.get_users(filter_data3)
 
 	def test_create_user(self):
 		user_email = 'user123@email.com'
 
-		new_user = create_user(
+		new_user = services.create_user(
 			name='user', email=user_email, password='userpassword')
 
 		assert new_user
-		assert get_user_one({'email':user_email}) 
+		assert services.get_user({'email':user_email}) 
 
 	def test_update_user(self, test_user):
 		user, user_data = test_user
 
 		new_name = 'a new name'
 		user.name = new_name
-		update_user(user)
+		services.update_user(user)
 
-		updated_user = get_user_one({'email':user_data['email']})
+		updated_user = services.get_user({'email':user_data['email']})
 		assert updated_user
 		assert updated_user.name == new_name
 
 	def test_delete_user(self, test_user):
 		user, user_data = test_user
-		delete_user(user)
+		services.delete_user(user)
 
-		assert get_user_one({'email':user_data['email']}) is None
+		assert services.get_user({'email':user_data['email']}) is None
 
 	def test_user_to_dict(self, test_user):
 		user, _ = test_user
 
-		dict_data = user_to_dict(user)
+		dict_data = services.user_to_dict(user)
 
 		assert dict_data['public_id'] == user.public_id
 		assert dict_data['name'] == user.name
@@ -112,33 +107,24 @@ class TestServices:
 
 
 	def test_get_role(self, db_session):
-		db_session.add(models.Role(name='get_test', has_access=0))
+		db_session.add(models.Role(name='get_test', has_full_access=0))
 		db_session.commit()
 
-		role1 = get_role('get_test')
+		role1 = services.get_role({'name':'get_test'})
 		assert role1.name == 'get_test'
 
 		# no such value
-		assert get_role('i dont exist') is None
-
-	def test_get_roles_by_access(self, db_session):
-		start_has_access = len(get_roles_by_access(1))
-
-		db_session.add(models.Role(name='get_all_by_access_test', has_access=1))
-		db_session.commit()
-
-		assert len(get_roles_by_access(1)) == start_has_access + 1
-
-		# no such values
-		assert not get_roles_by_access('i dont exist')
+		assert services.get_role({'name':'i dont exist'}) is None
 
 	def test_get_all_roles(self, db_session):
-		start_all = len(get_all_roles())
+		start_all = len(services.get_roles())
 		
-		db_session.add(models.Role(name='get_all_test', has_access=0))
+		data = {'name':'get_all_test', 'has_full_access':0}
+		db_session.add(models.Role(**data))
 		db_session.commit()
 
-		assert len(get_all_roles()) == start_all + 1
+		assert len(services.get_roles()) == start_all + 1
+		assert services.get_roles(data)
 
 
 class TestEndpoints:
@@ -153,7 +139,7 @@ class TestEndpoints:
 		assert response1.status_code == 201
 		assert json_data1['msg'].startswith('New user created!')
 		assert json_data1['user']['email'] == data1['email']
-		assert get_user_one({'email': data1['email']})
+		assert services.get_user({'email': data1['email']})
 
 		# invalid keys
 		data2 = {'name':'asdf2','password':'asdf2'}
@@ -198,7 +184,7 @@ class TestEndpoints:
 
 		assert response.status_code == 200
 		assert json_data['msg'].startswith('User data')
-		assert get_user_one({'email':data['email']})
+		assert services.get_user({'email':data['email']})
 
 	def test_delete_request(self, client, test_user):
 		user, user_data = test_user
@@ -210,4 +196,4 @@ class TestEndpoints:
 
 		assert response.status_code == 200
 		assert json_data['msg'].startswith('User ')
-		assert get_user_one({'public_id':user.public_id}) is None
+		assert services.get_user({'public_id':user.public_id}) is None

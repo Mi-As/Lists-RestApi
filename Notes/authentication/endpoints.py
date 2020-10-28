@@ -25,7 +25,7 @@ def login():
 	if not email or not password:
 		return jsonify({"msg": "Missing email or/and password parameter"}), 400
 	
-	requested_user = user_services.get_user_one({'email': email}) # get user object
+	requested_user = user_services.get_user({'email': email}) # get user object
 	if not requested_user:
 		return jsonify({"msg": "Bad email or password"}), 401
 

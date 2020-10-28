@@ -25,6 +25,6 @@ class Token(db.Model):
     	self.set_user_id(user_identity)
 
     def set_user_id(self, public_id):
-    	user = user_services.get_user_one({'public_id':public_id})
+    	user = user_services.get_user({'public_id':public_id})
     	assert user, "user has no such public id!" # 500 internal server error
     	self.user_public_id = public_id

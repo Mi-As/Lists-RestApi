@@ -2,15 +2,11 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, current_user
 
-from .services import (delete_obj, update_obj,
-	create_note, update_note, note_to_dict, get_note_all,
-	tag_to_dict, get_all_note_tags,
-	create_type, type_to_dict, get_all_note_types
-	)
+from . import services
 from ..services import admin_jwt_required
 
 
-class Notes(MethodView):
+class NotesEndpoints(MethodView):
 	""" Endpoint: /notes """
 
 	def filter_notes(self, request_args):
@@ -29,7 +25,7 @@ class Notes(MethodView):
 			filter_args['tag_list'] = filter_args['tag_list'].split(',')
 
 		used_filters = list(filter_args.keys())
-		notes = get_note_all(filter_args)
+		notes = services.get_notes(filter_args)
 		return notes, used_filters	
 	
 	@jwt_required
@@ -54,11 +50,11 @@ class Notes(MethodView):
 		if 'tags' in json_data.keys() and json_data['tags']:
 			note_data['tag_list'] = json_data['tags']
 
-		new_note = create_note(**note_data)
+		new_note = services.create_note(**note_data)
 
 		return jsonify(
 			{"msg":'Note has been successfully created!',
-			 "note": note_to_dict(new_note)}
+			 "note": services.note_to_dict(new_note)}
 		), 201
 
 	@jwt_required
@@ -72,7 +68,7 @@ class Notes(MethodView):
 		return jsonify({
 			"msg": "Request was processed successfully! {} notes found.".format(len(notes)),
 			"filters":used_filters,
-			"notes":[note_to_dict(note) for note in notes or []]
+			"notes":[services.note_to_dict(note) for note in notes or []]
 		}), 200
 
 	@jwt_required	
@@ -97,7 +93,7 @@ class Notes(MethodView):
 					note.type_name = data
 				elif key == 'tags':
 					note.set_tags(data)
-			update_note(note)
+			services.update_note(note)
 
 		return jsonify({"msg":
 			'{} notes have been successfully updated!'.format(len(notes))
@@ -115,14 +111,14 @@ class Notes(MethodView):
 			return jsonify({"msg": 'Notes not found, please check your parameters!'}), 404
 
 		for note in notes:
-			delete_obj(note)
+			services.delete_obj(note)
 
 		return jsonify({"msg":
 			'{} notes have been successfully deleted!'.format(len(notes))
 		}), 200
 
 
-class Tags(MethodView):
+class TagsEndpoints(MethodView):
 	""" Endpoint: /notes/tags """
 
 	def filter_tags(self, request_args):
@@ -136,7 +132,7 @@ class Tags(MethodView):
 		filter_args = dict(filter(lambda arg: arg[0] in filter_avl, request_args.items()))
 		filter_args['user_public_id'] = current_user.public_id
 
-		tags = get_all_note_tags(filter_args)
+		tags = services.get_note_tags(filter_args)
 		return tags
 	
 	@jwt_required
@@ -149,7 +145,7 @@ class Tags(MethodView):
 
 		return jsonify({
 			"msg": "Request was processed successfully! {} tags found.".format(len(tags)),
-			"tags":[tag_to_dict(tag) for tag in tags or []]
+			"tags":[services.tag_to_dict(tag) for tag in tags or []]
 			}), 200
 
 	@jwt_required
@@ -169,7 +165,7 @@ class Tags(MethodView):
 
 		for tag in tags:
 			tag.name = json_data['name']
-			update_obj(tag)
+			services.update_obj(tag)
 
 		return jsonify({"msg":
 			'{} tags have been successfully renamed!'.format(len(tags))
@@ -187,14 +183,14 @@ class Tags(MethodView):
 			return jsonify({"msg": 'Tags not found, please check your parameters!'}), 404
 
 		for tag in tags:
-			delete_obj(tag)
+			services.delete_obj(tag)
 
 		return jsonify({"msg":
 			'{} tags have been successfully deleted!'.format(len(tags))
 		}), 200
 
 
-class Types(MethodView):
+class TypesEndpoints(MethodView):
 	""" Endpoint: /notes/types """
 
 	def filter_types(self, request_args):
@@ -207,7 +203,7 @@ class Types(MethodView):
 		filter_avl = ['id','name']
 		filter_args = dict(filter(lambda arg: arg[0] in filter_avl, request_args.items()))
 
-		types = get_all_note_types(filter_args)
+		types = services.get_note_types(filter_args)
 		return types
 
 	@admin_jwt_required
@@ -222,11 +218,11 @@ class Types(MethodView):
 		if not 'name' in json_data.keys():
 			return jsonify({"msg":'A Key is missing, check: name!'}), 400
 
-		new_type = create_type({'name':json_data['name']})
+		new_type = services.create_type({'name':json_data['name']})
 
 		return jsonify(
 			{"msg":'Type has been successfully created!',
-			 "type": type_to_dict(new_type)}
+			 "type": services.type_to_dict(new_type)}
 		), 201
 
 	def get(self):
@@ -238,7 +234,7 @@ class Types(MethodView):
 
 		return jsonify({
 			"msg": "Request was processed successfully! {} types found.".format(len(types)),
-			"types":[type_to_dict(_type) for _type in types or []]
+			"types":[services.type_to_dict(_type) for _type in types or []]
 			}), 200
 
 	@admin_jwt_required
@@ -258,7 +254,7 @@ class Types(MethodView):
 
 		for _type in types:
 			_type.name = json_data['name']
-			update_obj(_type)
+			services.update_obj(_type)
 
 		return jsonify({"msg":
 			'{} types have been successfully renamed!'.format(len(types))
@@ -276,7 +272,7 @@ class Types(MethodView):
 			return jsonify({"msg": 'Types not found, please check your parameters!'}), 404
 
 		for _type in types:
-			delete_obj(_type)
+			services.delete_obj(_type)
 
 		return jsonify({"msg":
 			'{} types have been successfully deleted!'.format(len(types))

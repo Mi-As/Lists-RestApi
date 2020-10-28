@@ -5,11 +5,10 @@ import string
 import tempfile
 
 from ..apps.users.models import Role
-from ..apps.users.services import create_user, get_role
+from ..apps.users import services as user_services
+from ..apps.notes import services as note_services
 
-from ..apps.notes.services import create_note, create_tag, create_type, get_note_type
-
-from ..authentication.services import create_access_token, create_refresh_token
+from ..authentication import services as auth_services
 ''' 
 configures the application for testing and initializes a new database
 https://flask.palletsprojects.com/en/1.1.x/testing/	the-testing-skeleton
@@ -60,9 +59,9 @@ def db_session(app, db):
 # FIXTURES: FUNCTION
 @pytest.fixture(scope='function')
 def test_user(db_session):
-	if not get_role('user'):
+	if not user_services.get_role({'name':'user'}):
 		# do not use has_access 1 for 'user' role in production
-		db_session.add(Role(name='user', has_access=1))
+		db_session.add(Role(name='user', has_full_access=1))
 		db_session.commit()
 
 	rdm_name = random_str('name')
@@ -70,12 +69,12 @@ def test_user(db_session):
 				 'email': (rdm_name + '@email.com'),
 				 'password': rdm_name}
 				
-	user = create_user(**user_data)
+	user = user_services.create_user(**user_data)
 
 	ret = {
-		'access_token_fresh': create_access_token(identity=user.public_id, fresh=True),
-		'access_token': create_access_token(identity=user.public_id, fresh=False),
-		'refresh_token': create_refresh_token(identity=user.public_id)}
+		'access_token_fresh': auth_services.create_access_token(identity=user.public_id, fresh=True),
+		'access_token': auth_services.create_access_token(identity=user.public_id, fresh=False),
+		'refresh_token': auth_services.create_refresh_token(identity=user.public_id)}
 
 	return user, {**user_data, **ret}
 
@@ -83,10 +82,10 @@ def test_user(db_session):
 def test_user_note(test_user):
 	user, user_data = test_user
 
-	if not get_note_type({'name':'note'}):
-		create_type('note')
+	if not note_services.get_note_type({'name':'note'}):
+		note_services.create_type('note')
 
-	note = create_note(
+	note = note_services.create_note(
 		user_public_id=user.public_id,
 		tag_list=['music'],
 		text=random_str('note'))
@@ -96,7 +95,8 @@ def test_user_note(test_user):
 def test_user_tag(test_user):
 	user, user_data = test_user
 
-	tag = create_tag(user_public_id=user.public_id, name=random_str('tag'))
+	tag = note_services.create_tag(
+		user_public_id=user.public_id, name=random_str('tag'))
 	return user, user_data, tag
 
 
@@ -104,7 +104,7 @@ def test_user_tag(test_user):
 def test_user_type(test_user):
 	user, user_data = test_user
 
-	_type = create_type(random_str('type'))
+	_type = note_services.create_type(random_str('type'))
 	return user, user_data, _type
 
 def random_str(prefix):
