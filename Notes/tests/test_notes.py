@@ -4,11 +4,13 @@ from flask import json
 from ..apps.notes import endpoints, models
 from ..apps.notes.services import (
 	get_note_one, get_note_all, create_note, update_note, delete_note, note_to_dict,
-	get_note_type, get_all_note_types, get_note_tag, get_all_note_tags)
+	get_note_type, get_all_note_types,
+	get_note_tag, get_all_note_tags, tag_to_dict)
 from ..apps.users.services import get_user_one
 
 
 url = '/notes'
+url_tags = url + '/tags'
 
 class TestModels:
 	
@@ -156,44 +158,40 @@ class TestServices:
 		assert len(get_all_note_types()) == start_all + 1
 
 	# NOTE_TAG
-	def test_get_note_tag(self, db_session, test_user):
-		note_user, _ = test_user
-		tag_values = {'user_public_id':note_user.public_id, 'name':'tag_test1'}
-		db_session.add(models.NoteTag(**tag_values))
-		db_session.commit()
+	def test_get_note_tag(self, test_user_tag):
+		_, _, tag = test_user_tag
 
 		filter1 = get_note_tag(
-			{'user_public_id':note_user.public_id,
-			 'name':tag_values['name']})
-		assert filter1.name == tag_values['name']
+			{'user_public_id':tag.user_public_id,
+			 'name':tag.name})
+		assert filter1.name == tag.name
 
 		# no such value
 		filter2 = get_note_tag(
-			{'user_public_id':note_user.public_id,
+			{'user_public_id': tag.user_public_id,
 			 'name':'i dont exist'})
 		assert filter2 is None
 
-	def test_get_all_note_tags(self, db_session, test_user):
-		note_user, _ = test_user
-		start_all = len(get_all_note_tags({
-			'user_public_id':note_user.public_id}))
-		
-		tag_values = {
-			'user_public_id':note_user.public_id, 'name':'tag_test2'}
-		db_session.add(models.NoteTag(**tag_values))
-		db_session.commit()
+	def test_get_all_note_tags(self, test_user_tag):
+		_, _, tag = test_user_tag
 
 		note_tags = get_all_note_tags({
-			'user_public_id':note_user.public_id})
-		assert len(note_tags) == start_all + 1
-
+			'user_public_id':tag.user_public_id})
+		assert note_tags
 		assert get_all_note_tags()
+
+	def test_tag_to_dict(self, test_user_tag):
+		_, _, tag = test_user_tag
+		dict_data = tag_to_dict(tag)
+
+		assert dict_data['id'] == tag.id
+		assert dict_data['name'] == tag.name
 
 
 class TestEndpoints:
 	
-	# NOTE
-	def test_post_request(self, client, test_user):
+	# NOTES
+	def test_notes_post_request(self, client, test_user):
 		user, user_data = test_user
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + user_data['access_token']}
@@ -216,7 +214,7 @@ class TestEndpoints:
 		assert response2.status_code == 400
 		assert json_data2["msg"]
 
-	def test_get_request(self, client, test_user_note):
+	def test_notes_get_request(self, client, test_user_note):
 		user, user_data, note = test_user_note
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + user_data['access_token']}
@@ -233,10 +231,11 @@ class TestEndpoints:
 		json_data = response.get_json()
 
 		assert response.status_code == 200
+		assert json_data["msg"]
 		assert json_data["filters"]
 		assert json_data["notes"][0]["id"] == note.id
 
-	def test_put_request(self, client, test_user_note):
+	def test_notes_put_request(self, client, test_user_note):
 		user, user_data, note = test_user_note
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + user_data['access_token']}
@@ -261,7 +260,7 @@ class TestEndpoints:
 		assert response2.status_code == 404
 		assert json_data2["msg"]
 
-	def test_delete_request(self, client, test_user_note):
+	def test_notes_delete_request(self, client, test_user_note):
 		user, user_data, note = test_user_note
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + user_data['access_token']}
@@ -281,3 +280,70 @@ class TestEndpoints:
 
 		assert response2.status_code == 404
 		assert json_data2["msg"]
+
+	# TAGS
+	def test_tags_get_request(self, client, test_user_tag):
+		user, user_data, tag = test_user_tag
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data = '?name={name}'.format(id=tag.id, name=tag.name)
+		response = client.get(url_tags + url_data, headers=headers)
+		json_data = response.get_json()
+
+		assert response.status_code == 200
+		assert json_data["msg"]
+		assert json_data["tags"][0]["id"] == tag.id
+
+	def test_tags_put_request(self, client, test_user_tag):
+		user, user_data, tag = test_user_tag
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data1 = '?id={}'.format(tag.id)
+		data1 = {'name':'new name'}
+		response1 = client.put(url_tags + url_data1, headers=headers, data=json.dumps(data1))
+		json_data1 = response1.get_json()
+
+		assert response1.status_code == 200
+		assert json_data1["msg"]
+		updated_tag = get_note_tag({'id':tag.id})
+		assert updated_tag.name == data1['name']
+
+		# invalid url data
+		url_data2 = '?id={}'.format('i dont exist')
+		response2 = client.put(url_tags + url_data2, headers=headers, data=json.dumps(data1))
+		json_data2 = response2.get_json()
+
+		assert response2.status_code == 404
+		assert json_data2["msg"]
+
+		# invalid key
+		data3 = {'i dont exist': 'new name'}
+		response3 = client.put(url_tags + url_data1, headers=headers, data=json.dumps(data3))
+		json_data3 = response3.get_json()
+
+		assert response3.status_code == 400
+		assert json_data3["msg"]
+
+	def test_tags_delete_request(self, client, test_user_tag):
+		user, user_data, tag = test_user_tag
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data1 = '?id={}'.format(tag.id)
+		response1 = client.delete(url_tags + url_data1, headers=headers)
+		json_data1 = response1.get_json()
+
+		assert response1.status_code == 200
+		assert json_data1["msg"]
+		assert get_note_tag({"id":tag.id}) is None
+
+		# invalid url data
+		url_data2 = '?id={}'.format('i dont exit')
+		response2 = client.delete(url_tags + url_data2, headers=headers)
+		json_data2 = response2.get_json()
+
+		assert response2.status_code == 404
+		assert json_data2["msg"]
+

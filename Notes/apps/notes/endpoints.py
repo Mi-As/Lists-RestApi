@@ -2,10 +2,12 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, current_user
 
-from .services import create_note, update_note, delete_note, note_to_dict, get_note_all
+from .services import (
+	create_note, update_note, delete_note, note_to_dict, get_note_all,
+	tag_to_dict, get_all_note_tags)
 
 
-class NotesAPI(MethodView):
+class Notes(MethodView):
 	""" Endpoint: /notes """
 
 	def filter_notes(self, request_args):
@@ -65,6 +67,7 @@ class NotesAPI(MethodView):
 		notes, used_filters = self.filter_notes(request.args)
 
 		return jsonify({
+			"msg": "Request was processed successfully! {} notes found.".format(len(notes)),
 			"filters":used_filters,
 			"notes":[note_to_dict(note) for note in notes or []]
 		}), 200
@@ -116,6 +119,72 @@ class NotesAPI(MethodView):
 		}), 200
 
 
-class TagsAPI(MethodView):
-	""" Endpoint: /tag """
-	pass
+class Tags(MethodView):
+	""" Endpoint: /notes/tags """
+
+	def filter_tags(self, request_args):
+		"""
+		Formats and passes filter arguments from request to
+		get_all_note_tags service
+		:params request_args: 
+		:return tags: tag objects
+		"""
+		filter_avl = ['id','name']
+		filter_args = dict(filter(lambda arg: arg[0] in filter_avl, request_args.items()))
+		filter_args['user_public_id'] = current_user.public_id
+
+		tags = get_all_note_tags(filter_args)
+		return tags
+	
+	@jwt_required
+	def get(self):
+		"""
+		:params id, name
+		:return: tag data
+		"""
+		tags = self.filter_tags(request.args)
+
+		return jsonify({
+			"msg": "Request was processed successfully! {} tags found.".format(len(tags)),
+			"tags":[tag_to_dict(tag) for tag in tags or []]
+			}), 200
+
+	@jwt_required
+	def put(self):
+		"""
+		renames requested tags
+		:params id, name
+		:return: success message
+		"""
+		json_data = request.get_json()
+		tags = self.filter_tags(request.args)
+		if not tags:
+			return jsonify({"msg": 'Tags not found, please check your parameters!'}), 404
+
+		if not 'name' in json_data.keys():
+			return jsonify({"msg": 'Missing name parameter'}), 400
+
+		for tag in tags:
+			tag.name = json_data['name']
+
+		return jsonify({"msg":
+			'{} tags have been successfully renamed!'.format(len(tags))
+		}), 200
+
+	@jwt_required
+	def delete(self):
+		"""
+		deletes requested tags
+		:params id, name
+		:return: success message
+		"""
+		tags = self.filter_tags(request.args)
+		if not tags:
+			return jsonify({"msg": 'Tags not found, please check your parameters!'}), 404
+
+		for tag in tags:
+			delete_note(tag)
+
+		return jsonify({"msg":
+			'{} tags have been successfully deleted!'.format(len(tags))
+		}), 200

@@ -78,4 +78,10 @@ def get_all_note_tags(filter_data=None):
 		return models.NoteTag.query.filter_by(**filter_data).all()
 	return models.NoteTag.query.all()
 
+def tag_to_dict(tag_obj):
+	return {
+		'id': tag_obj.id,
+		'name': tag_obj.name
+	}
+
 

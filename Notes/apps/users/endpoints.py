@@ -13,7 +13,7 @@ class UserAPI(MethodView):
 		"""
 		creates a new user
 		:params name, email, password: 
-		:return: success message
+		:return: success message, user_obj
 		"""
 		json_data = request.get_json()
 

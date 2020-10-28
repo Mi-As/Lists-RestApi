@@ -1,5 +1,3 @@
-from flask import jsonify, json
-
 from ... import db
 from ..services import except_invalid_request_error as except_error
 from . import models
