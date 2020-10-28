@@ -37,7 +37,7 @@ class Note(db.Model):
 	 	self.user_public_id = user_public_id
  
 	def set_type_name(self, type_name):
-		note_type = services.get_note_type(name=type_name)
+		note_type = services.get_note_type({'name':type_name})
 		assert note_type, "no such type_name!" # 500 internal server error
 		self.type_name = note_type.name
 	 	
@@ -47,8 +47,7 @@ class Note(db.Model):
 			tag = services.get_note_tag({'user_public_id':self.user_public_id, 'name':t})
 			# if tag does not exits make new one
 			if not tag:
-				tag = NoteTag(user_public_id=self.user_public_id, name=t)
-				db.session.add(tag)
+				tag = services.create_tag(user_public_id=self.user_public_id, name=t)
 			if not tag in self.tags:
 				self.tags.append(tag)
 

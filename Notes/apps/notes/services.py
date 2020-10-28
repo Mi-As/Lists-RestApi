@@ -4,6 +4,12 @@ from ... import db
 from ..services import except_invalid_request_error as except_error
 from . import models
 
+def delete_obj(obj):
+	db.session.delete(obj)
+	db.session.commit()
+
+def update_obj(obj):
+	db.session.commit()
 
 # NOTE
 @except_error
@@ -32,7 +38,7 @@ def get_note_all(filter_data=None):
 
 	return my_query.all()
 
-
+# todo except name unique error
 def create_note(user_public_id, text, type_name='note', tag_list=[]):
 	new_note = models.Note(user_public_id, type_name, tag_list, text)
 	db.session.add(new_note)
@@ -42,11 +48,6 @@ def create_note(user_public_id, text, type_name='note', tag_list=[]):
 
 def update_note(note_obj):
 	note_obj.last_change_time = datetime.now()
-	db.session.add(note_obj)
-	db.session.commit()
-
-def delete_note(note_obj):
-	db.session.delete(note_obj)
 	db.session.commit()
 
 def note_to_dict(note_obj):
@@ -61,11 +62,28 @@ def note_to_dict(note_obj):
 
 
 # NOTE TYPE
-def get_note_type(name):
-	return models.NoteType.query.filter_by(name=name).first()
+@except_error
+def get_note_type(filter_data):
+	return models.NoteType.query.filter_by(**filter_data).first()
 
-def get_all_note_types():
+@except_error
+def get_all_note_types(filter_data=None):
+	if filter_data:
+		return models.NoteType.query.filter_by(**filter_data).all()
 	return models.NoteType.query.all()
+
+
+def create_type(name):
+	new_type = models.NoteType(name=name)
+	db.session.add(new_type)
+	db.session.commit()
+	return new_type
+
+def type_to_dict(type_obj):
+	return {
+		'id':type_obj.id,
+		'name':type_obj.name
+	}
 
 # NOTE TAG
 @except_error
@@ -77,6 +95,12 @@ def get_all_note_tags(filter_data=None):
 	if filter_data:
 		return models.NoteTag.query.filter_by(**filter_data).all()
 	return models.NoteTag.query.all()
+
+def create_tag(user_public_id, name):
+	new_tag = models.NoteTag(user_public_id=user_public_id, name=name)
+	db.session.add(new_tag)
+	db.session.commit()
+	return new_tag
 
 def tag_to_dict(tag_obj):
 	return {

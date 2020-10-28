@@ -3,9 +3,10 @@ from flask import json
 
 from ..apps.notes import endpoints, models
 from ..apps.notes.services import (
-	get_note_one, get_note_all, create_note, update_note, delete_note, note_to_dict,
-	get_note_type, get_all_note_types,
-	get_note_tag, get_all_note_tags, tag_to_dict)
+	delete_obj, update_obj,
+	get_note_one, get_note_all, create_note, update_note, note_to_dict,
+	get_note_type, get_all_note_types, create_type, type_to_dict,
+	get_note_tag, get_all_note_tags, create_tag, tag_to_dict)
 from ..apps.users.services import get_user_one
 
 
@@ -34,7 +35,7 @@ class TestModels:
 		db_session.add(models.NoteType(**type_values))
 		db_session.commit()
 		# get type and test values
-		new_type = get_note_type(name=type_values['name'])
+		new_type = get_note_type({'name':type_values['name']})
 		assert new_type
 
 	# NOTE
@@ -67,6 +68,20 @@ class TestModels:
 
 
 class TestServices:
+
+	def test_delete_obj(self, test_user_note):
+		_, _, note = test_user_note
+		delete_obj(note)
+
+		assert get_note_one({'id':note.id}) is None
+
+	def test_update_obj(self, test_user_type):
+		_, _, _type = test_user_type
+		_type.name = 'altered'
+		update_obj(_type)
+
+		updated_type = get_note_type({'id':_type.id})
+		assert updated_type.name == 'altered'
 
 	# NOTE
 	def test_get_note_one(self, test_user_note):
@@ -119,13 +134,8 @@ class TestServices:
 		note.text = 'altered'
 		update_note(note)
 
-		assert get_note_one({'text':'altered'})
-
-	def test_delete_note(self, test_user_note):
-		_, _, note = test_user_note
-		delete_note(note)
-
-		assert get_note_one({'id':note.id}) is None
+		updated_note = get_note_one({'id':note.id}) 
+		assert updated_note.text == 'altered'
 
 	def test_note_to_dict(self, test_user_note):
 		_, _, note = test_user_note
@@ -138,24 +148,35 @@ class TestServices:
 		assert dict_data['is_archived'] == note.is_archived
 
 	# NOTE_TYPE
-	def test_get_note_type(self, db_session):
-		type_values = {'name':'type_test1'}
-		db_session.add(models.NoteType(**type_values))
-		db_session.commit()
+	def test_get_note_type(self, test_user_type):
+		_, _, _type = test_user_type
 
-		filter1 = get_note_type(type_values['name'])
-		assert filter1.name == type_values['name']
+		filter1 = get_note_type({'id':_type.id})
+		assert filter1.name == _type.name
 
 		# no such value
-		assert get_note_type('i dont exist') is None
+		assert get_note_type({'name':'i dont exist'}) is None
 
-	def test_get_all_note_types(self, db_session):
-		start_all = len(get_all_note_types())
+	def test_get_all_note_types(self, test_user_type):
+		_, _, _type = test_user_type
 		
-		db_session.add(models.NoteType(name='type_test2'))
-		db_session.commit()
+		note_types = get_all_note_types({
+			'name':_type.name})
+		assert note_types
+		assert get_all_note_types()
 
-		assert len(get_all_note_types()) == start_all + 1
+	def test_create_note_type(self):
+		new_type = create_type('picture')
+
+		assert new_type
+		assert get_note_type({'name':'picture'})
+
+	def test_tag_to_dict(self, test_user_type):
+		_, _, _type = test_user_type
+		dict_data = tag_to_dict(_type)
+
+		assert dict_data['id'] == _type.id
+		assert dict_data['name'] == _type.name
 
 	# NOTE_TAG
 	def test_get_note_tag(self, test_user_tag):
@@ -179,6 +200,15 @@ class TestServices:
 			'user_public_id':tag.user_public_id})
 		assert note_tags
 		assert get_all_note_tags()
+
+	def test_create_note_tag(self, test_user):
+		note_user, _ = test_user
+
+		new_tag = create_tag(
+			user_public_id=note_user.public_id, name='games')
+
+		assert new_tag
+		assert get_note_tag({'name':'games'}) 
 
 	def test_tag_to_dict(self, test_user_tag):
 		_, _, tag = test_user_tag
@@ -347,3 +377,4 @@ class TestEndpoints:
 		assert response2.status_code == 404
 		assert json_data2["msg"]
 
+	# TYPES

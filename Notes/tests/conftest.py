@@ -7,8 +7,7 @@ import tempfile
 from ..apps.users.models import Role
 from ..apps.users.services import create_user, get_role
 
-from ..apps.notes.models import NoteType, NoteTag
-from ..apps.notes.services import create_note, get_note_type
+from ..apps.notes.services import create_note, create_tag, create_type, get_note_type
 
 from ..authentication.services import create_access_token, create_refresh_token
 ''' 
@@ -62,7 +61,8 @@ def db_session(app, db):
 @pytest.fixture(scope='function')
 def test_user(db_session):
 	if not get_role('user'):
-		db_session.add(Role(name='user', has_access=0))
+		# do not use has_access 1 for 'user' role in production
+		db_session.add(Role(name='user', has_access=1))
 		db_session.commit()
 
 	rdm_name = random_str('name')
@@ -80,12 +80,11 @@ def test_user(db_session):
 	return user, {**user_data, **ret}
 
 @pytest.fixture(scope='function')
-def test_user_note(test_user, db_session):
+def test_user_note(test_user):
 	user, user_data = test_user
 
-	if not get_note_type('note'):
-		db_session.add(NoteType(name='note'))
-		db_session.commit()
+	if not get_note_type({'name':'note'}):
+		create_type('note')
 
 	note = create_note(
 		user_public_id=user.public_id,
@@ -94,16 +93,19 @@ def test_user_note(test_user, db_session):
 	return user, user_data, note
 
 @pytest.fixture(scope='function')
-def test_user_tag(test_user, db_session):
+def test_user_tag(test_user):
 	user, user_data = test_user
 
-	tag = NoteTag(user_public_id=user.public_id, name=random_str('tag'))
-	db_session.add(tag)
-	db_session.commit()
-
+	tag = create_tag(user_public_id=user.public_id, name=random_str('tag'))
 	return user, user_data, tag
 
 
+@pytest.fixture(scope='function')
+def test_user_type(test_user):
+	user, user_data = test_user
+
+	_type = create_type(random_str('type'))
+	return user, user_data, _type
 
 def random_str(prefix):
 	return (

@@ -2,9 +2,12 @@ from flask import request, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, current_user
 
-from .services import (
-	create_note, update_note, delete_note, note_to_dict, get_note_all,
-	tag_to_dict, get_all_note_tags)
+from .services import (delete_obj, update_obj,
+	create_note, update_note, note_to_dict, get_note_all,
+	tag_to_dict, get_all_note_tags,
+	create_type, type_to_dict, get_all_note_types
+	)
+from ..services import admin_jwt_required
 
 
 class Notes(MethodView):
@@ -112,7 +115,7 @@ class Notes(MethodView):
 			return jsonify({"msg": 'Notes not found, please check your parameters!'}), 404
 
 		for note in notes:
-			delete_note(note)
+			delete_obj(note)
 
 		return jsonify({"msg":
 			'{} notes have been successfully deleted!'.format(len(notes))
@@ -166,6 +169,7 @@ class Tags(MethodView):
 
 		for tag in tags:
 			tag.name = json_data['name']
+			update_obj(tag)
 
 		return jsonify({"msg":
 			'{} tags have been successfully renamed!'.format(len(tags))
@@ -183,8 +187,98 @@ class Tags(MethodView):
 			return jsonify({"msg": 'Tags not found, please check your parameters!'}), 404
 
 		for tag in tags:
-			delete_note(tag)
+			delete_obj(tag)
 
 		return jsonify({"msg":
 			'{} tags have been successfully deleted!'.format(len(tags))
 		}), 200
+
+
+class Types(MethodView):
+	""" Endpoint: /notes/types """
+
+	def filter_types(self, request_args):
+		"""
+		Formats and passes filter arguments from request to
+		get_all_note_types service
+		:params request_args: 
+		:return tags: type objects
+		"""
+		filter_avl = ['id','name']
+		filter_args = dict(filter(lambda arg: arg[0] in filter_avl, request_args.items()))
+
+		types = get_all_note_types(filter_args)
+		return types
+
+	@admin_jwt_required
+	def post(self):
+		"""
+		creates a new type
+		:params name:
+		:return: success message, type obj
+		"""
+		json_data = request.get_json()
+
+		if not 'name' in json_data.keys():
+			return jsonify({"msg":'A Key is missing, check: name!'}), 400
+
+		new_type = create_type({'name':json_data['name']})
+
+		return jsonify(
+			{"msg":'Type has been successfully created!',
+			 "type": type_to_dict(new_type)}
+		), 201
+
+	def get(self):
+		"""
+		:params id, name
+		:return: type data
+		"""
+		types = self.filter_types(request.args)
+
+		return jsonify({
+			"msg": "Request was processed successfully! {} types found.".format(len(types)),
+			"types":[type_to_dict(_type) for _type in types or []]
+			}), 200
+
+	@admin_jwt_required
+	def put(self):
+		"""
+		renames requested types
+		:params id, name
+		:return: success message
+		"""
+		json_data = request.get_json()
+		types = self.filter_types(request.args)
+		if not types:
+			return jsonify({"msg": 'Types not found, please check your parameters!'}), 404
+
+		if not 'name' in json_data.keys():
+			return jsonify({"msg": 'Missing name parameter'}), 400
+
+		for _type in types:
+			_type.name = json_data['name']
+			update_obj(_type)
+
+		return jsonify({"msg":
+			'{} types have been successfully renamed!'.format(len(types))
+		}), 200
+
+	@admin_jwt_required
+	def delete(self):
+		"""
+		deletes requested types
+		:params id, name
+		:return: success message
+		"""
+		types = self.filter_types(request.args)
+		if not types:
+			return jsonify({"msg": 'Types not found, please check your parameters!'}), 404
+
+		for _type in types:
+			delete_obj(_type)
+
+		return jsonify({"msg":
+			'{} types have been successfully deleted!'.format(len(types))
+		}), 200
+
