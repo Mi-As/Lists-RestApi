@@ -26,6 +26,12 @@ class TestFixtures:
 		assert user_data
 		assert note
 
+	def test_fixture_tag(self, test_user_tag):
+		user, user_data, tag = test_user_tag
+		assert user
+		assert user_data
+		assert tag
+
 
 class TestHelloWorld:
 

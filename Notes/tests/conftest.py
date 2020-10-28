@@ -1,5 +1,4 @@
 import os
-import names
 import pytest
 import random
 import string
@@ -8,7 +7,7 @@ import tempfile
 from ..apps.users.models import Role
 from ..apps.users.services import create_user, get_role
 
-from ..apps.notes.models import NoteType
+from ..apps.notes.models import NoteType, NoteTag
 from ..apps.notes.services import create_note, get_note_type
 
 from ..authentication.services import create_access_token, create_refresh_token
@@ -66,10 +65,10 @@ def test_user(db_session):
 		db_session.add(Role(name='user', has_access=0))
 		db_session.commit()
 
-	unique_name = names.get_last_name() + str(random.randint(10,99))
-	user_data = {'name': unique_name, 
-				 'email': (unique_name + '@email.com'),
-				 'password': unique_name}
+	rdm_name = random_str('name')
+	user_data = {'name': rdm_name, 
+				 'email': (rdm_name + '@email.com'),
+				 'password': rdm_name}
 				
 	user = create_user(**user_data)
 
@@ -80,7 +79,6 @@ def test_user(db_session):
 
 	return user, {**user_data, **ret}
 
-
 @pytest.fixture(scope='function')
 def test_user_note(test_user, db_session):
 	user, user_data = test_user
@@ -89,9 +87,26 @@ def test_user_note(test_user, db_session):
 		db_session.add(NoteType(name='note'))
 		db_session.commit()
 
-	rdm_text = 'note ' + ''.join(random.choice(string.ascii_lowercase) for l in range(10))
 	note = create_note(
 		user_public_id=user.public_id,
 		tag_list=['music'],
-		text=rdm_text)
+		text=random_str('note'))
 	return user, user_data, note
+
+@pytest.fixture(scope='function')
+def test_user_tag(test_user, db_session):
+	user, user_data = test_user
+
+	tag = NoteTag(user_public_id=user.public_id, name=random_str('tag'))
+	db_session.add(tag)
+	db_session.commit()
+
+	return user, user_data, tag
+
+
+
+def random_str(prefix):
+	return (
+		prefix +'_' + 
+		''.join(random.choice(string.ascii_lowercase) for l in range(10))
+	)
