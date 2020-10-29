@@ -373,4 +373,14 @@ class TestEndpoints:
 		assert json_data2["msg"]
 
 	# TYPES
-	# Todo
+	def test_type_post_request(self, client, test_user_type):
+		pass
+
+	def test_type_get_request(self, client, test_user_type):
+		pass
+
+	def test_type_put_request(self, client, test_user_type):
+		pass
+
+	def test_type_delete_request(self, client, test_user_type):
+		pass

@@ -14,10 +14,12 @@ def except_invalid_request_error(func):
 
 
 def admin_jwt_required(func):
+	from .users.services import get_role
 	@wraps(func)
 	def wrapped(*args, **kwargs):
 		verify_jwt_in_request()
-		if current_user.role.has_access:
+		role = get_role({'name':current_user.role_name})
+		if role.has_full_access:
 			return func(*args, **kwargs)
 		else:
 			return jsonify(

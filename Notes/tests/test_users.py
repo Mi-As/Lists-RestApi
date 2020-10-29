@@ -197,3 +197,31 @@ class TestEndpoints:
 		assert response.status_code == 200
 		assert json_data['msg'].startswith('User ')
 		assert services.get_user({'public_id':user.public_id}) is None
+
+	def test_admin_put_request(self, client, test_user, db_session):
+
+		if not services.get_role({'name':'admin'}):
+			db_session.add(models.Role(name='admin', has_full_access=1))
+			db_session.commit()
+
+		user, user_data = test_user
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		data = {'role': 'admin'}
+		response = client.put(url + '/' + user.public_id, headers=headers, data=json.dumps(data))
+		json_data = response.get_json()
+
+		assert response.status_code == 200
+		assert json_data["msg"]
+		updated_user = services.get_user({'public_id':user.public_id})
+		assert updated_user.role_name == 'admin'
+
+		# invalid key
+		data2 = {'i dont exist': 0}
+		response2 = client.put(url + '/' + user.public_id, headers=headers, data=json.dumps(data2))
+		assert response2.status_code == 400
+
+		# invalid public_id
+		response3 = client.put(url + '/' + 'invalid', headers=headers, data=json.dumps(data))
+		assert response3.status_code == 404
