@@ -53,7 +53,7 @@ def refresh():
 		'access_token': services.create_access_token(identity=current_user_public_id, fresh=False)}
 	return jsonify(ret), 200
 
-# Endpoint for revoking the current users access and refesh token
+
 @auth_bp.route('/logout', methods=['DELETE'])
 @jwt_required
 def logout():
