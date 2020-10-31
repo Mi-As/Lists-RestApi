@@ -152,7 +152,8 @@ class TagsEndpoints(MethodView):
 	def put(self):
 		"""
 		renames requested tags
-		:params id, name
+		:params id, name: filter parameters
+		:params name:
 		:return: success message
 		"""
 		json_data = request.get_json()
@@ -175,7 +176,7 @@ class TagsEndpoints(MethodView):
 	def delete(self):
 		"""
 		deletes requested tags
-		:params id, name
+		:params id, name: filter parameters
 		:return: success message
 		"""
 		tags = self.filter_tags(request.args)
@@ -227,7 +228,7 @@ class TypesEndpoints(MethodView):
 
 	def get(self):
 		"""
-		:params id, name
+		:params id, name: filter parameters
 		:return: type data
 		"""
 		types = self.filter_types(request.args)
@@ -241,7 +242,8 @@ class TypesEndpoints(MethodView):
 	def put(self):
 		"""
 		renames requested types
-		:params id, name
+		:params id, name: filter parameters
+		:params name:
 		:return: success message
 		"""
 		json_data = request.get_json()
@@ -264,7 +266,7 @@ class TypesEndpoints(MethodView):
 	def delete(self):
 		"""
 		deletes requested types
-		:params id, name
+		:params id, name: filter parameters
 		:return: success message
 		"""
 		types = self.filter_types(request.args)
