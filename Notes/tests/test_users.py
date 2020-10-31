@@ -225,3 +225,11 @@ class TestEndpoints:
 		# invalid public_id
 		response3 = client.put(url + '/' + 'invalid', headers=headers, data=json.dumps(data))
 		assert response3.status_code == 404
+
+		# no access
+		db_session.add(models.Role(name='no access', has_full_access=0))
+		user.set_role_name('no access')
+
+		response4 = client.put(url + '/' + user.public_id, headers=headers, data=json.dumps(data))
+		json_data4 = response4.get_json()
+		assert response4.status_code == 403

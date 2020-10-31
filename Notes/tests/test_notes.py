@@ -5,8 +5,6 @@ from ..apps.notes import endpoints, models, services
 from ..apps.users import services as user_services
 
 
-url = '/notes'
-url_tags = url + '/tags'
 
 class TestModels:
 	
@@ -212,10 +210,9 @@ class TestServices:
 		assert dict_data['id'] == tag.id
 		assert dict_data['name'] == tag.name
 
-
-class TestEndpoints:
+url = '/notes'
+class TestEndpointsNotes:
 	
-	# NOTES
 	def test_notes_post_request(self, client, test_user):
 		user, user_data = test_user
 		headers = {'Content-Type': 'application/json',
@@ -306,13 +303,15 @@ class TestEndpoints:
 		assert response2.status_code == 404
 		assert json_data2["msg"]
 
-	# TAGS
+url_tags = url + '/tags'
+class TestEndpointsTags:
+
 	def test_tags_get_request(self, client, test_user_tag):
 		user, user_data, tag = test_user_tag
 		headers = {'Content-Type': 'application/json',
 				   'Authorization': 'Bearer ' + user_data['access_token']}
 
-		url_data = '?name={name}'.format(id=tag.id, name=tag.name)
+		url_data = '?id={id}&name={name}'.format(id=tag.id, name=tag.name)
 		response = client.get(url_tags + url_data, headers=headers)
 		json_data = response.get_json()
 
@@ -372,15 +371,93 @@ class TestEndpoints:
 		assert response2.status_code == 404
 		assert json_data2["msg"]
 
-	# TYPES
-	def test_type_post_request(self, client, test_user_type):
-		pass
+url_types = url + '/types'
+class TestEndpointsTypes:
+	
+	def test_type_post_request(self, client, test_user):
+		user, user_data = test_user
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		# valid data
+		data1 = {'name':'statistic'}
+		response1 = client.post(url_types, headers=headers, data=json.dumps(data1))
+		json_data1 = response1.get_json()
+
+		assert response1.status_code == 201
+		assert json_data1["msg"]
+		assert json_data1["type"]["name"] == data1['name']
+		assert services.get_note_type({'name':data1['name']})
+
+		# invalid keys
+		data2 = {'i dont exist':'statistic'}
+		response2 = client.post(url_types, headers=headers, data=json.dumps(data2))
+		json_data2 = response2.get_json()
+
+		assert response2.status_code == 400
+		assert json_data2["msg"]
 
 	def test_type_get_request(self, client, test_user_type):
-		pass
+		user, user_data, _type = test_user_type
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data = '?id={id}&name={name}'.format(id=_type.id, name=_type.name)
+		response = client.get(url_types + url_data, headers=headers)
+		json_data = response.get_json()
+
+		assert response.status_code == 200
+		assert json_data["msg"]
+		assert json_data["types"][0]["id"] == _type.id
 
 	def test_type_put_request(self, client, test_user_type):
-		pass
+		user, user_data, _type = test_user_type
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data1 = '?id={}'.format(_type.id)
+		data1 = {'name':'new name'}
+		response1 = client.put(url_types + url_data1, headers=headers, data=json.dumps(data1))
+		json_data1 = response1.get_json()
+
+		assert response1.status_code == 200
+		assert json_data1["msg"]
+		updated_type = services.get_note_type({'id':_type.id})
+		assert updated_type.name == data1['name']
+
+		# invalid url data
+		url_data2 = '?id={}'.format('i dont exist')
+		response2 = client.put(url_types + url_data2, headers=headers, data=json.dumps(data1))
+		json_data2 = response2.get_json()
+
+		assert response2.status_code == 404
+		assert json_data2["msg"]
+
+		# invalid key
+		data3 = {'i dont exist': 'new name'}
+		response3 = client.put(url_types + url_data1, headers=headers, data=json.dumps(data3))
+		json_data3 = response3.get_json()
+
+		assert response3.status_code == 400
+		assert json_data3["msg"]
 
 	def test_type_delete_request(self, client, test_user_type):
-		pass
+		user, user_data, _type = test_user_type
+		headers = {'Content-Type': 'application/json',
+				   'Authorization': 'Bearer ' + user_data['access_token']}
+
+		url_data1 = '?id={}'.format(_type.id)
+		response1 = client.delete(url_types + url_data1, headers=headers)
+		json_data1 = response1.get_json()
+
+		assert response1.status_code == 200
+		assert json_data1["msg"]
+		assert services.get_note_type({"id":_type.id}) is None
+
+		# invalid url data
+		url_data2 = '?id={}'.format('i dont exit')
+		response2 = client.delete(url_types + url_data2, headers=headers)
+		json_data2 = response2.get_json()
+
+		assert response2.status_code == 404
+		assert json_data2["msg"]

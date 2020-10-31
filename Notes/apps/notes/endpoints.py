@@ -218,7 +218,7 @@ class TypesEndpoints(MethodView):
 		if not 'name' in json_data.keys():
 			return jsonify({"msg":'A Key is missing, check: name!'}), 400
 
-		new_type = services.create_type({'name':json_data['name']})
+		new_type = services.create_type(json_data['name'])
 
 		return jsonify(
 			{"msg":'Type has been successfully created!',
