@@ -7,14 +7,14 @@ This is my small REST-API Project. It allows a user to manage notes.
 
 ## Getting Started
 
-To start the flask application in development, please install the required packages. To initialize the database you can use the following command.
+To start the flask application, please install the [required packages](requirements.txt). To initialize the database you can use the following commands.
 
 ```
 flask db init
 sqlite3 main.db < init.sql  # use the init file to fill the database with data
 ```
 
-Now you can run the application and use the endpoints.
+Now you can run the application and use its endpoints.
 
 ```
 flask run
