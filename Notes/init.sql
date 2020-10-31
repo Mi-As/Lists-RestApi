@@ -1,7 +1,7 @@
 -- sqlite3 main.db < init.sql
 
 -- Init data roles
-INSERT INTO role (name, has_access)
+INSERT INTO role (name, has_full_access)
 VALUES ('admin', 1),('user', 0);
 
 -- Init data types
