@@ -11,7 +11,7 @@ To start the flask application in development, please install the required packa
 
 ```
 flask db init
-sqlite3 main.db < init.sql  # you can use the init file to fill the database with data
+sqlite3 main.db < init.sql  # use the init file to fill the database with data
 ```
 
 Now you can run the application and use the endpoints.
@@ -20,7 +20,7 @@ Now you can run the application and use the endpoints.
 flask run
 ```
 
-If you want to run automated tests you can use the command ```pytest```
+If you want to run automated tests you can use the command ```pytest```.
 
 
 ## Documentation
