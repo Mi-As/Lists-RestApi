@@ -6,14 +6,16 @@ from . import services
 from ..apps.users import services as user_services
 
 
-
 auth_bp = Blueprint('auth', __name__)
 
 # https://flask-jwt-extended.readthedocs.io/en/stable/
-# Standard login endpoint. Will return a fresh access token and
-# a refresh token
 @auth_bp.route('/login', methods=['POST'])
 def login():
+	"""
+	Authenticates user.
+	:params email, password:
+	:return: access_token, refresh_token
+	"""
 
 	# validate if data is json
 	if not request.is_json:
@@ -25,7 +27,7 @@ def login():
 	if not email or not password:
 		return jsonify({"msg": "Missing email or/and password parameter"}), 400
 	
-	requested_user = user_services.get_user_one({'email': email}) # get user object
+	requested_user = user_services.get_user({'email': email}) # get user object
 	if not requested_user:
 		return jsonify({"msg": "Bad email or password"}), 401
 
@@ -38,20 +40,27 @@ def login():
 	else:
 		return jsonify({"msg": "Bad email or password"}), 401
 
-# This will generate a new access token from the refresh token, but
-# will mark that access token as non-fresh
+
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_refresh_token_required
 def refresh():
+	"""
+	Generate a new access token, marks it as non-fresh
+	:return: access_token
+	"""
 	current_user_public_id = get_jwt_identity()
 	ret = {
 		'access_token': services.create_access_token(identity=current_user_public_id, fresh=False)}
 	return jsonify(ret), 200
 
-# Endpoint for revoking the current users access and refesh token
+
 @auth_bp.route('/logout', methods=['DELETE'])
 @jwt_required
 def logout():
+	"""
+	Revokes the current users access and refesh token
+	:return: success message
+	"""
 	user_public_id = get_jwt_identity()
 	if services.revoke_user_tokens(user_public_id):
 		return jsonify({"msg": "Successfully logged out"}), 200

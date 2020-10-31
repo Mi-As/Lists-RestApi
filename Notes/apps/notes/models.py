@@ -13,7 +13,7 @@ class Note(db.Model):
 
 	text = db.Column(db.String)
 	last_change_time = db.Column(db.DateTime, nullable=False)
-	is_active = db.Column(db.Boolean, nullable=False) # note löschen nach 7 Tagen wenn auf False?		
+	is_archived = db.Column(db.Boolean, nullable=False) # note löschen nach 7 Tagen wenn auf False?		
 
 	# Relationships
 	# One-to-Many
@@ -26,29 +26,28 @@ class Note(db.Model):
 		self.public_id = str(uuid.uuid4())
 		self.text = text
 		self.last_change_time = datetime.now()
-		self.is_active=True
+		self.is_archived=False
 		self.set_user_id(user_public_id)
 		self.set_type_name(type_name)
 		self.set_tags(tag_list)
 
 	def set_user_id(self, user_public_id):
-	 	user = user_services.get_user_one({'public_id': user_public_id})
+	 	user = user_services.get_user({'public_id': user_public_id})
 	 	assert user, "no such user_public_id!" # 500 internal server error
 	 	self.user_public_id = user_public_id
  
 	def set_type_name(self, type_name):
-		note_type = services.get_note_type(name=type_name)
+		note_type = services.get_note_type({'name':type_name})
 		assert note_type, "no such type_name!" # 500 internal server error
 		self.type_name = note_type.name
 	 	
 	def set_tags(self, tag_list):
 		self.tags = []
 		for t in tag_list:
-			tag = services.get_note_tag(name=t)
+			tag = services.get_note_tag({'user_public_id':self.user_public_id, 'name':t})
 			# if tag does not exits make new one
 			if not tag:
-				tag = NoteTag(name=t)
-				db.session.add(tag)
+				tag = services.create_tag(user_public_id=self.user_public_id, name=t)
 			if not tag in self.tags:
 				self.tags.append(tag)
 
@@ -60,7 +59,10 @@ class NoteType(db.Model):
 
 class NoteTag(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	name = db.Column(db.String, nullable=False, unique=True)
+	name = db.Column(db.String, nullable=False)
+
+	# One-to-Many
+	user_public_id = db.Column(db.String(50), db.ForeignKey('user.public_id', ondelete='CASCADE'))
 
 
 # association table

@@ -5,9 +5,8 @@ from ... import db
 # import like this bc: https://stackoverflow.com/questions/43576422/sqlalchemy-flask-class-is-not-defined
 from ..notes import models as notes
 from ...authentication import models as authenticaton
+
 from . import services
-
-
 
 
 class User(db.Model):
@@ -34,7 +33,7 @@ class User(db.Model):
 		self.set_role_name(role_name)
 
 	def set_role_name(self, role_name):
-		role = services.get_role(name=role_name)
+		role = services.get_role({'name':role_name})
 		assert role, "no such user_role!" 
 		self.role_name = role_name
 
@@ -47,5 +46,5 @@ class User(db.Model):
 class Role(db.Model):  # ['Admin', 'User']
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String, unique=True, nullable=False)
-	has_access = db.Column(db.Boolean, nullable=False, default=False)
+	has_full_access = db.Column(db.Boolean, nullable=False, default=False)
 	
